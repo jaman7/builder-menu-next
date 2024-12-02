@@ -58,7 +58,7 @@ Ensure you have the following installed:
 
    ```bash
    git clone https://github.com/jaman7/builder-menu-next.git
-   cd edit-menu-next
+   cd builder-menu-next
    ```
 
 2. Install dependencies:
