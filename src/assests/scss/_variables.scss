@@ -1,0 +1,29 @@
+:root {
+  --font-inter: "Inter", sans-serif;
+
+  /* Background Colors */
+  --bg-primary: #fff; /* Colors/Background/bg-primary */
+  --bg-secondary: #f9fafb; /* Colors/Background/bg-secondary */
+  --bg-page: #f5f5f5; /* General page background color */
+
+  /* Text Colors */
+  --text-white: #fff; /* Colors/Text/text-primary (900) */
+  --text-primary: #101828; /* Colors/Text/text-primary (900) */
+  --text-secondary: #344054; /* Colors/Text/text-secondary (700) */
+  --text-tertiary: #475467; /* Colors/Text/text-tertiary (600) */
+  --text-placeholder: #667085; /* Placeholder color for forms/inputs */
+
+  /* Button Colors */
+  --button-primary-bg: #7f56d9; /* Background color for primary buttons */
+  --button-primary-border: #7f56d9; /* Border color for primary buttons */
+  --button-tertiary-color: #6941c6; /* Text color for secondary buttons */
+  --button-tertiary-border: #d6bbfb; /* Border color for secondary buttons */
+  --button-secondary-color: #344054; /* Text color for secondary buttons */
+
+  /* Border Colors */
+  --border-primary: #d0d5dd; /* Border color for buttons and main forms */
+  --border-secondary: #eaecf0; /* Border color for titles, forms, and menu items */
+
+  /* Miscellaneous */
+  --link-color: #475467; /* Color for <a> tags */
+}

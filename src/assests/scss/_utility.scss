@@ -1,0 +1,63 @@
+/* SCSS Utility Classes */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
+.bg-page {
+  background-color: var(--bg-page);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-tertiary {
+  color: var(--text-tertiary);
+}
+
+.text-placeholder {
+  color: var(--text-placeholder);
+}
+
+.button-primary {
+  background-color: var(--button-primary-bg);
+  border-color: var(--button-primary-border);
+  color: var(--text-white);
+}
+
+.button-secondary {
+  color: var(--button-secondary-color);
+  border-color: var(--border-primary);
+  background-color: var(--bg-primary);
+}
+
+.button-tertiary {
+  color: var(--button-tertiary-color);
+  border-color: var(--button-tertiary-border);
+  background-color: var(--bg-primary);
+}
+
+.border-primary {
+  color: var(--button-secondary-color-fg);
+  border-color: var(--border-primary);
+}
+
+.border-secondary {
+  border-color: var(--border-secondary);
+}
+
+.link-color {
+  color: var(--link-color);
+}
+
+.font-family-inter {
+  font-family: var(--font-inter);
+}
