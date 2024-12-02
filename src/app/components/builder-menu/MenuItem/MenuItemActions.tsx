@@ -18,7 +18,7 @@ const MenuItemActions: React.FC<IProps> = ({ id, onEdit, onDelete, onAddNew }) =
         Usuń
       </Button>
       <Button variant={ButtonVariant.SECONDARY} handleClick={() => onAddNew?.(id)} className="rounded-none text-sm last:rounded-r-lg">
-        Dodaj pod-menu
+        Dodaj pozycję menu
       </Button>
     </div>
   );
