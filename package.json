@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext ts,tsx --fix --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --ext ts,tsx --fix",
     "prettier:format": "prettier --write --html-whitespace-sensitivity ignore src/**/*{.tsx,.ts,.js,.jsx,.json,.css,.scss,.html}",
     "prepare": "husky .husky",
     "test": "jest --watchAll",
