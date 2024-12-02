@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { AriaAttributes, Suspense } from 'react';
 import { forwardRef, HTMLAttributes, useState } from 'react';
 import useNavigationStore, { INavItem } from '@/store/navigationStore';
 import classNames from 'classnames';
@@ -17,14 +17,11 @@ export interface IProps extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   depth?: number;
   disableInteraction?: boolean;
   ghost?: boolean;
-  handleProps?: any;
+  handleProps?: AriaAttributes & HTMLAttributes<HTMLDivElement>;
   indicator?: boolean;
   value?: string | number;
   show?: string;
   indentationWidth?: number;
-  onEdit?: () => void;
-  onAddNew?: (parentId?: string | number | null) => void;
-  onCollapse?(): void;
   wrapperRef?(node: HTMLLIElement): void;
 }
 
@@ -42,9 +39,6 @@ const TreeItem = forwardRef<HTMLDivElement, IProps>(
       ghost,
       handleProps,
       indicator,
-      onCollapse,
-      onAddNew,
-      onEdit,
       style,
       wrapperRef,
       ...props
@@ -120,7 +114,7 @@ const TreeItem = forwardRef<HTMLDivElement, IProps>(
             <div className={'children-clone-list'} style={{ overflow: 'hidden' }}>
               <Suspense fallback={<div>Ładowanie...</div>}>
                 {navChildren &&
-                  navChildren?.map((child: any) => {
+                  navChildren?.map((child) => {
                     return <RecursiveItem key={`${child.id}-clone`} item={child} nDepth={1} />;
                   })}
               </Suspense>

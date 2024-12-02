@@ -1,6 +1,7 @@
 import { INavItem } from '@/store/navigationStore';
 import MenuItem from './MenuItem/MenuItem';
 import { indentationWidth } from './MenuEditor.const';
+import React from 'react';
 
 interface IProps {
   item: INavItem;
@@ -27,4 +28,4 @@ const RecursiveItem: React.FC<IProps> = ({ item, nDepth }) => {
   );
 };
 
-export default RecursiveItem;
+export default React.memo(RecursiveItem);

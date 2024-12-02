@@ -16,7 +16,7 @@ export const MenuEditor: React.FC<IProps> = ({ style = 'bordered' }) => {
   const [addingNew, setAddingNew] = useState(false);
 
   return (
-    <div className="block bg-transparent border border-solid border-primary rounded-lg">
+    <div className="border-primary block rounded-lg border border-solid bg-transparent">
       {navigation.length > 0 ? <MenuListDrag style={style} /> : <EmptyState onAdd={() => setAddingNew(true)} />}
 
       {addingNew && (

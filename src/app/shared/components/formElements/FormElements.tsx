@@ -17,17 +17,6 @@ const FormElements = ({ formControlName, config }: IProps) => {
   const { errors } = formState || {};
   const { formCellType } = config || {};
 
-  const inputType = useMemo(() => {
-    switch (config.formCellType) {
-      case INPUT_NUMBER:
-        return 'number';
-      case INPUT_SEARCH:
-        return 'search';
-      default:
-        return 'text';
-    }
-  }, [config.formCellType]);
-
   const renderFormElement = useMemo(() => {
     const inputType = (cellType: IFormElementsTypes): InputTypes => {
       if (cellType === INPUT_NUMBER) {
@@ -47,14 +36,14 @@ const FormElements = ({ formControlName, config }: IProps) => {
             name={formControlName}
             control={control}
             render={({ field }) => (
-              <Input {...field} config={{ ...config, type: inputType(formCellType) }} error={errors[formControlName]?.message} />
+              <Input {...field} config={{ ...config, type: inputType(formCellType) }} error={errors[formControlName]?.message as string} />
             )}
           />
         );
       default:
         return null;
     }
-  }, [formControlName, control, config]);
+  }, [formControlName, control, config, errors, formCellType]);
 
   return (
     <div className={`form-element ${config.styleClass || ''}`}>

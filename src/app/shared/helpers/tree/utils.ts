@@ -1,4 +1,4 @@
-type TreeCallback<T> = (node: T) => boolean;
+export type TreeCallback<T> = (node: T) => boolean;
 
 export const traverseTree = <T extends { children?: T[] }>(items: T[], callback: TreeCallback<T>): T | undefined => {
   for (const node of items) {
@@ -14,8 +14,10 @@ export const traverseTree = <T extends { children?: T[] }>(items: T[], callback:
 export const groupByParent = <T extends { parentId?: string | number | null }>(items: T[]): Map<string | number | null, T[]> => {
   return items.reduce((map, item) => {
     const parentId = item.parentId ?? null;
-    if (!map.has(parentId)) map.set(parentId, []);
-    map.get(parentId)?.push(item);
+    if (!map.has(parentId)) {
+      map.set(parentId, []);
+    }
+    map.get(parentId)!.push(item);
     return map;
   }, new Map<string | number | null, T[]>());
 };

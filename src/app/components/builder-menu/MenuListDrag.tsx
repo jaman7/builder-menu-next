@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   closestCenter,
   DndContext,
@@ -29,32 +30,21 @@ import {
 
 interface IProps {
   style?: 'bordered' | 'shadow';
-  onEdit?: () => void;
 }
 
-const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
+const MenuListDrag: React.FC<IProps> = ({ style }) => {
   const { navigation, setDragState, resetDragState, setNavigation } = useNavigationStore();
   const flattenedMenu = useNavigationStore((state) => state.flattenedNavigation);
   const { activeId, overId, offsetLeft } = useNavigationStore((state) => state.dragState);
 
-  const activeItem = useMemo(() => (activeId ? flattenedMenu.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
+  const activeItem = useMemo(() => (activeId ? flattenedMenu?.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
 
   const projected = useMemo(() => {
     if (!activeId || !overId) return null;
     return levelProjection(flattenedMenu, activeId, overId, offsetLeft ?? 0, indentationWidth);
   }, [activeId, overId, offsetLeft, flattenedMenu]);
 
-  const childCounts = useMemo(() => {
-    return flattenedMenu.reduce(
-      (acc, item) => {
-        acc[item.id] = childrenCount(flattenedMenu, item.id); // Wywołanie funkcji `childrenCount`
-        return acc;
-      },
-      {} as Record<string | number, number>
-    ); // Klucz to ID elementu, wartość to liczba dzieci
-  }, [flattenedMenu]);
-
-  const sortedIds = useMemo(() => flattenedMenu?.map(({ id }) => id) ?? [], [flattenedMenu]);
+  const sortedIds = useMemo(() => flattenedMenu?.map(({ id }) => id) ?? [], [flattenedMenu]) ?? [];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -64,6 +54,11 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
     }),
     useSensor(KeyboardSensor)
   );
+
+  const resetState = useCallback((): void => {
+    resetDragState();
+    document.body.style.setProperty('cursor', '');
+  }, [resetDragState]);
 
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
@@ -117,13 +112,8 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
       setNavigation(newNavigation);
       resetDragState();
     },
-    [flattenedMenu, projected]
+    [flattenedMenu, projected, resetDragState, resetState, setNavigation]
   );
-
-  const resetState = (): void => {
-    resetDragState();
-    document.body.style.setProperty('cursor', '');
-  };
 
   return (
     <DndContext
@@ -137,7 +127,7 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <ul className="flex flex-col rounded-lg bg-secondary">
+        <ul className="bg-secondary flex flex-col rounded-lg">
           {flattenedMenu &&
             flattenedMenu?.map((item) => (
               <SortableItem
@@ -150,7 +140,6 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
                 depth={item.id === activeId && projected ? projected.level : item.level}
                 indicator={style === 'bordered'}
                 childCount={childrenCount(navigation ?? [], activeId) + 1}
-                onEdit={onEdit}
               />
             ))}
 
@@ -163,7 +152,7 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
               {activeId && activeItem?.id === activeId ? (
                 <SortableItem
                   id={activeId}
-                  depth={activeItem.level > 0 ? 0 : activeItem.level}
+                  depth={activeItem?.level > 0 ? 0 : activeItem?.level}
                   item={flattenedMenu?.find((el) => el.id === activeId)}
                   clone={activeId !== null && childrenCount(flattenedMenu ?? [], activeId) > 0}
                   childCount={childrenCount(navigation ?? [], activeId) + 1}

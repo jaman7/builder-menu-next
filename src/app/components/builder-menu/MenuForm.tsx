@@ -29,7 +29,7 @@ export interface IFormData {
 interface IProps {
   data?: INavItem | null;
   parentId?: string | number | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: INavItem | null) => void;
   onCancel: () => void;
 }
 
@@ -62,13 +62,9 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
   const handleSubmit = (formData: IFormData) => {
     const dataForm = { ...formData };
     const { id } = data || {};
-    if (!id) {
-      addNavItem(dataForm, parentId ?? null);
-    }
-    if (id) {
-      updateNavItem(id, dataForm);
-    }
-    onSubmit(data);
+    if (!id) addNavItem(dataForm, parentId ?? null);
+    if (id) updateNavItem(id, dataForm);
+    onSubmit(data as INavItem);
   };
 
   const handleDelete = () => {
@@ -83,7 +79,7 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(handleSubmit)} className="border border-solid border-primary rounded-lg p-6 bg-white">
+      <form onSubmit={methods.handleSubmit(handleSubmit)} className="border-primary rounded-lg border border-solid bg-white p-6">
         <div className="grid grid-cols-[1fr,auto] gap-x-3">
           <div className="block w-full">
             {formElements?.map((config) => (
@@ -97,7 +93,8 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
             </Button>
           </div>
         </div>
-        <div className="flex pt-5 gap-x-2">
+
+        <div className="flex gap-x-2 pt-5">
           <Button handleClick={onCancel} variant={ButtonVariant.SECONDARY}>
             Anuluj
           </Button>

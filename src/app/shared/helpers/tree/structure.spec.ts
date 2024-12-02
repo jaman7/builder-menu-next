@@ -240,6 +240,58 @@ describe('findIdPushChildren', () => {
     const result = findIdPushChildren(999, items, newChildren);
     expect(result).toEqual(items);
   });
+
+  it('should add children to the correct parent', () => {
+    const sourceArray: INavItem[] = [
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child',
+            children: [],
+            level: 1,
+            order: 0,
+          },
+        ],
+        level: 0,
+        order: 0,
+      },
+    ];
+    const newChildren: INavItem[] = [{ id: 3, parentId: 2, label: 'Grandchild', children: [], level: 2, order: 0 }];
+    const result = findIdPushChildren(2, sourceArray, newChildren);
+    expect(result).toEqual([
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child',
+            children: [
+              {
+                id: 3,
+                parentId: 2,
+                label: 'Grandchild',
+                children: [],
+                level: 2,
+                order: 0,
+              },
+            ],
+            level: 1,
+            order: 0,
+          },
+        ],
+        level: 0,
+        order: 0,
+      },
+    ]);
+  });
 });
 
 describe('buildTreeFromFlatten', () => {
@@ -317,7 +369,7 @@ describe('buildTreeFromFlatten', () => {
       { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
-    expect(() => buildTreeFromFlatten(items)).toThrowError('Item with id 999 not found');
+    expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
   });
 });
 
@@ -364,63 +416,7 @@ describe('updateOrderAndLevel', () => {
     const result = updateOrderAndLevel([]);
     expect(result).toEqual([]);
   });
-});
 
-describe('findIdPushChildren', () => {
-  it('should add children to the correct parent', () => {
-    const sourceArray: INavItem[] = [
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ];
-    const newChildren: INavItem[] = [{ id: 3, parentId: 2, label: 'Grandchild', children: [], level: 2, order: 0 }];
-    const result = findIdPushChildren(2, sourceArray, newChildren);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [
-              {
-                id: 3,
-                parentId: 2,
-                label: 'Grandchild',
-                children: [],
-                level: 2,
-                order: 0,
-              },
-            ],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ]);
-  });
-});
-
-describe('updateOrderAndLevel', () => {
   it('should update levels and orders correctly', () => {
     const items: INavItem[] = [
       {
@@ -463,11 +459,6 @@ describe('updateOrderAndLevel', () => {
         ],
       },
     ]);
-  });
-
-  it('should handle an empty array gracefully', () => {
-    const result = updateOrderAndLevel([]);
-    expect(result).toEqual([]);
   });
 });
 

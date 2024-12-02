@@ -12,18 +12,16 @@ export type IFormElements = Omit<IInput, 'type'> & {
   iconComponent?: JSX.Element;
   disabled?: boolean;
   formCellType?: IFormElementsTypes;
-  value?: string | number | any | any[];
+  value?: string | number | string[] | number[];
   type?: IFormElementsTypes;
   hidden?: boolean;
   styleClass?: string;
   prefix?: string;
   placeholder?: string;
-  dictName?: string;
   name?: string;
   max?: number;
   min?: number;
   step?: number;
-  [name: string]: any;
 };
 
 export const FormCellConfigDefault = (): IFormElements => ({

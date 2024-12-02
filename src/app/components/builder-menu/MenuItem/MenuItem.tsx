@@ -27,7 +27,7 @@ const MenuItem: React.FC<IProps> = ({ id, item, onEdit, onDelete, onAddNew }) =>
   return (
     <div className={styleClass}>
       <div className="flex items-center">
-        <i className="text-4xl p-2.5 cursor-move drag-handle" ref={setActivatorNodeRef} {...attributes} {...listeners}>
+        <i className="drag-handle cursor-move p-2.5 text-4xl" ref={setActivatorNodeRef} {...attributes} {...listeners}>
           <DragIcon />
         </i>
 

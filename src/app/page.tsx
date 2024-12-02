@@ -6,7 +6,7 @@ import MultiLevelMenu from '@/components/primary-menu/MultiLevelMenu';
 
 export default function Home() {
   return (
-    <div className="block p-4 rounded-lg bg-transparent">
+    <div className="block rounded-lg bg-transparent p-4">
       <MultiLevelMenu />
       <MenuEditor />
     </div>

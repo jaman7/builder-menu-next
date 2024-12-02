@@ -16,7 +16,7 @@ interface IProps {
   clone?: boolean;
   depth?: number;
   indentationWidth?: number;
-  onEdit?: () => void;
+  // onEdit?: () => void;
 }
 
 const SortableItem: React.FC<IProps> = ({ id, depth, ...props }) => {

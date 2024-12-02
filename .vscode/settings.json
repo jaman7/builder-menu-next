@@ -263,6 +263,7 @@
   },
   "eslint.validate": [
     "javascript",
+    "javascriptreact",
     "typescript",
     "typescriptreact",
     "html"
@@ -270,6 +271,7 @@
   "eslint.options": {
     "extensions": [
       ".js",
+      ".jsx",
       ".ts",
       ".tsx",
       ".html"

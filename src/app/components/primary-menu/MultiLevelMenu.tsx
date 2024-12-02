@@ -28,7 +28,8 @@ const MultiLevelMenu: React.FC = () => {
   useEffect(() => {
     const tree = buildTree(initialNavigation);
     setNavigation(tree);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Pusta tablica, aby efekt uruchomił się tylko raz
 
   const renderMenu = (items: INavItem[] | undefined, level = 0) => {
     if (!Array.isArray(items)) return null;

@@ -25,7 +25,7 @@
     "plugin:react-hooks/recommended",
     "plugin:jsx-a11y/recommended",
     "plugin:tailwindcss/recommended",
-    "prettier",
+    "plugin:prettier/recommended",
     "plugin:jest/recommended",
     "plugin:jest/style"
   ],
@@ -53,9 +53,7 @@
       }
     ],
     "tailwindcss/no-custom-classname": "off",
-    "prettier/prettier": [
-      "error"
-    ],
+    "prettier/prettier": "error",
     "@typescript-eslint/no-explicit-any": "warn",
     "react/prop-types": "off",
     "jest/consistent-test-it": "error",
@@ -63,7 +61,8 @@
     "jest/no-focused-tests": "error",
     "jest/no-identical-title": "error",
     "jest/prefer-to-have-length": "warn",
-    "jest/valid-expect": "error"
+    "jest/valid-expect": "error",
+    "react/display-name": "off"
   },
   "ignorePatterns": [
     "node_modules/",
@@ -136,12 +135,7 @@ next-env.d.ts
 // see https://nextjs.org/docs/app/building-your-application/configuring/typescript for more information.
 
 next.config.ts
-import withBundleAnalyzer from '@next/bundle-analyzer';
 import { NextConfig } from 'next';
-
-const bundleAnalyzer = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -150,12 +144,11 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Połącz konfigurację Next.js z bundle-analyzer
 export default nextConfig;
 
 package.json
 {
-  "name": "edit-menu-next",
+  "name": "builder-menu-next",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -210,8 +203,10 @@ package.json
     "babel-jest": "^29.7.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.0.3",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jest": "^28.9.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-react": "^7.37.2",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-tailwindcss": "^3.11.0",
@@ -294,7 +289,7 @@ tsconfig.json
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -353,7 +348,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className="antialiased font-family-inter text-base text-primary font-normal bg-page">{children}</body>
+      <body className="font-family-inter text-primary bg-page text-base font-normal antialiased">{children}</body>
     </html>
   );
 }
@@ -367,7 +362,7 @@ import MultiLevelMenu from '@/components/primary-menu/MultiLevelMenu';
 
 export default function Home() {
   return (
-    <div className="block p-4 rounded-lg bg-transparent">
+    <div className="block rounded-lg bg-transparent p-4">
       <MultiLevelMenu />
       <MenuEditor />
     </div>
@@ -381,9 +376,9 @@ import PlusIcon from '@/shared/components/icons/PlusIcon';
 
 export default function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-secondary rounded-lg">
-      <p className="text-primary text-center mb-2 font-semibold">Menu jest puste</p>
-      <p className="text-tertiary text-center mb-2 text-sm">W tym menu nie ma jeszcze żadnych linków</p>
+    <div className="bg-secondary flex flex-col items-center justify-center rounded-lg p-6">
+      <p className="text-primary mb-2 text-center font-semibold">Menu jest puste</p>
+      <p className="text-tertiary mb-2 text-center text-sm">W tym menu nie ma jeszcze żadnych linków</p>
       <Button handleClick={onAdd} variant={ButtonVariant.PRIMARY}>
         <PlusIcon />
         <span className="ml-1">Dodaj pozycję menu</span>
@@ -462,7 +457,7 @@ export const MenuEditor: React.FC<IProps> = ({ style = 'bordered' }) => {
   const [addingNew, setAddingNew] = useState(false);
 
   return (
-    <div className="block bg-transparent border border-solid border-primary rounded-lg">
+    <div className="border-primary block rounded-lg border border-solid bg-transparent">
       {navigation.length > 0 ? <MenuListDrag style={style} /> : <EmptyState onAdd={() => setAddingNew(true)} />}
 
       {addingNew && (
@@ -518,7 +513,7 @@ export interface IFormData {
 interface IProps {
   data?: INavItem | null;
   parentId?: string | number | null;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: INavItem | null) => void;
   onCancel: () => void;
 }
 
@@ -551,13 +546,9 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
   const handleSubmit = (formData: IFormData) => {
     const dataForm = { ...formData };
     const { id } = data || {};
-    if (!id) {
-      addNavItem(dataForm, parentId ?? null);
-    }
-    if (id) {
-      updateNavItem(id, dataForm);
-    }
-    onSubmit(data);
+    if (!id) addNavItem(dataForm, parentId ?? null);
+    if (id) updateNavItem(id, dataForm);
+    onSubmit(data as INavItem);
   };
 
   const handleDelete = () => {
@@ -572,7 +563,7 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(handleSubmit)} className="border border-solid border-primary rounded-lg p-6 bg-white">
+      <form onSubmit={methods.handleSubmit(handleSubmit)} className="border-primary rounded-lg border border-solid bg-white p-6">
         <div className="grid grid-cols-[1fr,auto] gap-x-3">
           <div className="block w-full">
             {formElements?.map((config) => (
@@ -586,7 +577,8 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
             </Button>
           </div>
         </div>
-        <div className="flex pt-5 gap-x-2">
+
+        <div className="flex gap-x-2 pt-5">
           <Button handleClick={onCancel} variant={ButtonVariant.SECONDARY}>
             Anuluj
           </Button>
@@ -602,6 +594,7 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
 export default MenuForm;
 
 src\app\components\builder-menu\MenuListDrag.tsx
+import React from 'react';
 import {
   closestCenter,
   DndContext,
@@ -633,32 +626,21 @@ import {
 
 interface IProps {
   style?: 'bordered' | 'shadow';
-  onEdit?: () => void;
 }
 
-const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
+const MenuListDrag: React.FC<IProps> = ({ style }) => {
   const { navigation, setDragState, resetDragState, setNavigation } = useNavigationStore();
   const flattenedMenu = useNavigationStore((state) => state.flattenedNavigation);
   const { activeId, overId, offsetLeft } = useNavigationStore((state) => state.dragState);
 
-  const activeItem = useMemo(() => (activeId ? flattenedMenu.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
+  const activeItem = useMemo(() => (activeId ? flattenedMenu?.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
 
   const projected = useMemo(() => {
     if (!activeId || !overId) return null;
     return levelProjection(flattenedMenu, activeId, overId, offsetLeft ?? 0, indentationWidth);
   }, [activeId, overId, offsetLeft, flattenedMenu]);
 
-  const childCounts = useMemo(() => {
-    return flattenedMenu.reduce(
-      (acc, item) => {
-        acc[item.id] = childrenCount(flattenedMenu, item.id); // Wywołanie funkcji `childrenCount`
-        return acc;
-      },
-      {} as Record<string | number, number>
-    ); // Klucz to ID elementu, wartość to liczba dzieci
-  }, [flattenedMenu]);
-
-  const sortedIds = useMemo(() => flattenedMenu?.map(({ id }) => id) ?? [], [flattenedMenu]);
+  const sortedIds = useMemo(() => flattenedMenu?.map(({ id }) => id) ?? [], [flattenedMenu]) ?? [];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -668,6 +650,11 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
     }),
     useSensor(KeyboardSensor)
   );
+
+  const resetState = useCallback((): void => {
+    resetDragState();
+    document.body.style.setProperty('cursor', '');
+  }, [resetDragState]);
 
   const handleDragStart = useCallback(
     ({ active }: DragStartEvent) => {
@@ -721,13 +708,8 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
       setNavigation(newNavigation);
       resetDragState();
     },
-    [flattenedMenu, projected]
+    [flattenedMenu, projected, resetDragState, resetState, setNavigation]
   );
-
-  const resetState = (): void => {
-    resetDragState();
-    document.body.style.setProperty('cursor', '');
-  };
 
   return (
     <DndContext
@@ -741,7 +723,7 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
-        <ul className="flex flex-col rounded-lg bg-secondary">
+        <ul className="bg-secondary flex flex-col rounded-lg">
           {flattenedMenu &&
             flattenedMenu?.map((item) => (
               <SortableItem
@@ -754,7 +736,6 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
                 depth={item.id === activeId && projected ? projected.level : item.level}
                 indicator={style === 'bordered'}
                 childCount={childrenCount(navigation ?? [], activeId) + 1}
-                onEdit={onEdit}
               />
             ))}
 
@@ -767,7 +748,7 @@ const MenuListDrag: React.FC<IProps> = ({ style, onEdit }) => {
               {activeId && activeItem?.id === activeId ? (
                 <SortableItem
                   id={activeId}
-                  depth={activeItem.level > 0 ? 0 : activeItem.level}
+                  depth={activeItem?.level > 0 ? 0 : activeItem?.level}
                   item={flattenedMenu?.find((el) => el.id === activeId)}
                   clone={activeId !== null && childrenCount(flattenedMenu ?? [], activeId) > 0}
                   childCount={childrenCount(navigation ?? [], activeId) + 1}
@@ -791,6 +772,7 @@ src\app\components\builder-menu\RecursiveItem.tsx
 import { INavItem } from '@/store/navigationStore';
 import MenuItem from './MenuItem/MenuItem';
 import { indentationWidth } from './MenuEditor.const';
+import React from 'react';
 
 interface IProps {
   item: INavItem;
@@ -817,7 +799,7 @@ const RecursiveItem: React.FC<IProps> = ({ item, nDepth }) => {
   );
 };
 
-export default RecursiveItem;
+export default React.memo(RecursiveItem);
 
 src\app\components\builder-menu\SortableItem.tsx
 import { AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
@@ -838,7 +820,7 @@ interface IProps {
   clone?: boolean;
   depth?: number;
   indentationWidth?: number;
-  onEdit?: () => void;
+  // onEdit?: () => void;
 }
 
 const SortableItem: React.FC<IProps> = ({ id, depth, ...props }) => {
@@ -975,9 +957,6 @@ export interface IProps extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   value?: string | number;
   show?: string;
   indentationWidth?: number;
-  onEdit?: () => void;
-  onAddNew?: (parentId?: string | number | null) => void;
-  onCollapse?(): void;
   wrapperRef?(node: HTMLLIElement): void;
 }
 
@@ -995,9 +974,6 @@ const TreeItem = forwardRef<HTMLDivElement, IProps>(
       ghost,
       handleProps,
       indicator,
-      onCollapse,
-      onAddNew,
-      onEdit,
       style,
       wrapperRef,
       ...props
@@ -1073,7 +1049,7 @@ const TreeItem = forwardRef<HTMLDivElement, IProps>(
             <div className={'children-clone-list'} style={{ overflow: 'hidden' }}>
               <Suspense fallback={<div>Ładowanie...</div>}>
                 {navChildren &&
-                  navChildren?.map((child: any) => {
+                  navChildren?.map((child) => {
                     return <RecursiveItem key={`${child.id}-clone`} item={child} nDepth={1} />;
                   })}
               </Suspense>
@@ -1126,7 +1102,7 @@ const MenuItem: React.FC<IProps> = ({ id, item, onEdit, onDelete, onAddNew }) =>
   return (
     <div className={styleClass}>
       <div className="flex items-center">
-        <i className="text-4xl p-2.5 cursor-move drag-handle" ref={setActivatorNodeRef} {...attributes} {...listeners}>
+        <i className="drag-handle cursor-move p-2.5 text-4xl" ref={setActivatorNodeRef} {...attributes} {...listeners}>
           <DragIcon />
         </i>
 
@@ -1141,7 +1117,6 @@ export default React.memo(MenuItem);
 
 src\app\components\builder-menu\MenuItem\MenuItemActions.tsx
 import Button, { ButtonVariant } from '@/src/app/shared/components/button/Button';
-import { INavItem } from '@/src/app/store/navigationStore';
 import React from 'react';
 
 export interface IProps {
@@ -1154,13 +1129,13 @@ export interface IProps {
 const MenuItemActions: React.FC<IProps> = ({ id, onEdit, onDelete, onAddNew }) => {
   return (
     <div className="flex items-center gap-x-0">
-      <Button variant={ButtonVariant.SECONDARY} handleClick={onEdit} className="rounded-none first:rounded-l-lg text-sm">
+      <Button variant={ButtonVariant.SECONDARY} handleClick={onEdit} className="rounded-none text-sm first:rounded-l-lg">
         Edytuj
       </Button>
       <Button variant={ButtonVariant.SECONDARY} handleClick={onDelete} className="rounded-none text-sm">
         Usuń
       </Button>
-      <Button variant={ButtonVariant.SECONDARY} handleClick={() => onAddNew?.(id)} className="rounded-none last:rounded-r-lg text-sm">
+      <Button variant={ButtonVariant.SECONDARY} handleClick={() => onAddNew?.(id)} className="rounded-none text-sm last:rounded-r-lg">
         Dodaj pod-menu
       </Button>
     </div>
@@ -1174,9 +1149,9 @@ import React from 'react';
 
 const MenuItemDetails: React.FC<{ label: string; url: string }> = ({ label, url }) => {
   return (
-    <div className="flex flex-col w-full">
-      <span className="text-sm text-primary font-semibold">{label}</span>
-      <span className="text-sm link-color">{url}</span>
+    <div className="flex w-full flex-col">
+      <span className="text-primary text-sm font-semibold">{label}</span>
+      <span className="link-color text-sm">{url}</span>
     </div>
   );
 };
@@ -1420,7 +1395,7 @@ const Collapse: React.FC<ICollapseProps> = ({ isOpen, children, duration = 0.35,
         paddingBottom: isOpen ? `${paddingBottom ?? 0}px` : '0',
       }}
       style={{ overflow: 'hidden' }}
-      className="block bg-secondary"
+      className="bg-secondary block"
       transition={{
         duration,
         ease,
@@ -1772,9 +1747,9 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
 
   return (
     <div className="block">
-      <div className="flex flex-col relative border-0 rounded-lg">
+      <div className="relative flex flex-col rounded-lg border-0">
         {type === 'search' && (
-          <div className="absolute z-10 inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <div className="pointer-events-none absolute inset-y-0 start-0 z-10 flex items-center ps-3">
             <SearchIcon />
           </div>
         )}
@@ -1803,7 +1778,7 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
         )}
       </div>
 
-      {error && <span className="text-red-500 text-xs">{error}</span>}
+      {error && <span className="text-xs text-red-500">{error}</span>}
     </div>
   );
 };
@@ -2086,7 +2061,7 @@ describe('addItem', () => {
   it('should throw an error if parentId does not exist in a nested tree', () => {
     const items: INavItem[] = [{ id: 1, parentId: null, label: 'Root', children: [], level: 0, order: 0 }];
     const newItem: INavItem = { id: 2, parentId: 999, label: 'Invalid Parent', children: [] };
-    expect(() => addItem(items, newItem, 999)).toThrowError('Parent with id 999 does not exist.');
+    expect(() => addItem(items, newItem, 999)).toThrow('Parent with id 999 does not exist.');
   });
 });
 
@@ -2552,7 +2527,7 @@ describe('buildTreeFromFlatten', () => {
       { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
-    expect(() => buildTreeFromFlatten(items)).toThrowError('Item with id 999 not found');
+    expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
   });
 });
 
@@ -2961,7 +2936,7 @@ interface NavigationStore {
   updateNavItem: (id: string | number | null, updatedItem: Omit<INavItem, 'id'>) => void;
   deleteNavItem: (id: string | number | null) => void;
   setDragState: (state: Partial<DragState>) => void;
-  resetDragState: () => void; // Nowa metoda
+  resetDragState: () => void;
   toggleCollapse: (id: string | number) => void;
   isCollapseOpen: (id: string | number) => boolean;
 }
@@ -2973,8 +2948,7 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
   openCollapseMap: {},
   setNavigation: (items: INavItem[]) =>
     set(() => {
-      const flattened = flattenTree(items); // Spłaszczenie drzewa
-      console.log(flattened);
+      const flattened = flattenTree(items);
       return { navigation: items, flattenedNavigation: flattened };
     }),
   addNavItem: (item, parentId = null) =>
@@ -2990,17 +2964,18 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
         children: [],
       };
       const updatedNavigation = addItem(state?.navigation, newItem, parentId);
-      return { navigation: updatedNavigation };
+      return { navigation: updatedNavigation, flattenedNavigation: flattenTree(updatedNavigation) };
     }),
   updateNavItem: (id, updatedItem) =>
     set((state) => {
-      console.log(updateItem(state.navigation, id, updatedItem));
-      return { navigation: updateItem(state.navigation, id, updatedItem) };
+      const nav = updateItem(state.navigation, id, updatedItem);
+      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
     }),
   deleteNavItem: (id) =>
-    set((state) => ({
-      navigation: deleteItem(state.navigation, id),
-    })),
+    set((state) => {
+      const nav = deleteItem(state.navigation, id);
+      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
+    }),
   setDragState: (state: Partial<DragState>) =>
     set((current) => ({
       dragState: { ...current.dragState, ...state },

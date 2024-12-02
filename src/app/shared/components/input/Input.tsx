@@ -10,7 +10,7 @@ interface IProps {
   config: IInput;
   value?: string | number;
   onChange?: (value: string | number) => void;
-  error?: string | any;
+  error?: string | null | undefined;
   touched?: boolean;
 }
 
@@ -37,9 +37,9 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
 
   return (
     <div className="block">
-      <div className="flex flex-col relative border-0 rounded-lg">
+      <div className="relative flex flex-col rounded-lg border-0">
         {type === 'search' && (
-          <div className="absolute z-10 inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <div className="pointer-events-none absolute inset-y-0 start-0 z-10 flex items-center ps-3">
             <SearchIcon />
           </div>
         )}
@@ -68,7 +68,7 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
         )}
       </div>
 
-      {error && <span className="text-red-500 text-xs">{error}</span>}
+      {error && <span className="text-xs text-red-500">{error}</span>}
     </div>
   );
 };

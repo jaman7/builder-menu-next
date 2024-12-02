@@ -1,8 +1,14 @@
 import { groupByParent, traverseTree } from './utils';
 
+interface TreeNode {
+  id: number;
+  parentId?: number | null;
+  children?: TreeNode[];
+}
+
 describe('traverseTree', () => {
   it('should find an element at the root level', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [] },
       { id: 2, children: [] },
     ];
@@ -11,7 +17,7 @@ describe('traverseTree', () => {
   });
 
   it('should find an element at a nested level', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [{ id: 2, children: [] }] },
       { id: 3, children: [] },
     ];
@@ -20,7 +26,7 @@ describe('traverseTree', () => {
   });
 
   it('should return undefined if element does not exist', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [{ id: 2, children: [] }] },
       { id: 3, children: [] },
     ];
@@ -29,14 +35,14 @@ describe('traverseTree', () => {
   });
 
   it('should handle empty input gracefully', () => {
-    const result = traverseTree<{ id: number; children?: any[] }>([], (node) => node?.id === 1);
+    const result = traverseTree<TreeNode>([], (node) => node.id === 1);
     expect(result).toBeUndefined();
   });
 });
 
 describe('groupByParent', () => {
   it('should group items by parentId', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, parentId: null },
       { id: 2, parentId: 1 },
       { id: 3, parentId: 1 },
@@ -50,12 +56,12 @@ describe('groupByParent', () => {
   });
 
   it('should return empty map for empty input', () => {
-    const result = groupByParent([]);
+    const result = groupByParent<TreeNode>([]);
     expect(result.size).toBe(0);
   });
 
   it('should group items with no children', () => {
-    const items = [{ id: 1, parentId: null }];
+    const items: TreeNode[] = [{ id: 1, parentId: null }];
     const result = groupByParent(items);
     expect(result.get(null)).toEqual([{ id: 1, parentId: null }]);
     expect(result.get(1)).toBeUndefined();

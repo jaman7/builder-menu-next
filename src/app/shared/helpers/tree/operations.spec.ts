@@ -39,7 +39,7 @@ describe('addItem', () => {
   it('should throw an error if parentId does not exist in a nested tree', () => {
     const items: INavItem[] = [{ id: 1, parentId: null, label: 'Root', children: [], level: 0, order: 0 }];
     const newItem: INavItem = { id: 2, parentId: 999, label: 'Invalid Parent', children: [] };
-    expect(() => addItem(items, newItem, 999)).toThrowError('Parent with id 999 does not exist.');
+    expect(() => addItem(items, newItem, 999)).toThrow('Parent with id 999 does not exist.');
   });
 });
 

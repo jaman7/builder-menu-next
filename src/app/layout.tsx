@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className="antialiased font-family-inter text-base text-primary font-normal bg-page">{children}</body>
+      <body className="font-family-inter text-primary bg-page text-base font-normal antialiased">{children}</body>
     </html>
   );
 }

@@ -31,7 +31,7 @@ interface NavigationStore {
   updateNavItem: (id: string | number | null, updatedItem: Omit<INavItem, 'id'>) => void;
   deleteNavItem: (id: string | number | null) => void;
   setDragState: (state: Partial<DragState>) => void;
-  resetDragState: () => void; // Nowa metoda
+  resetDragState: () => void;
   toggleCollapse: (id: string | number) => void;
   isCollapseOpen: (id: string | number) => boolean;
 }
@@ -43,8 +43,7 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
   openCollapseMap: {},
   setNavigation: (items: INavItem[]) =>
     set(() => {
-      const flattened = flattenTree(items); // Spłaszczenie drzewa
-      console.log(flattened);
+      const flattened = flattenTree(items);
       return { navigation: items, flattenedNavigation: flattened };
     }),
   addNavItem: (item, parentId = null) =>
@@ -60,17 +59,18 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
         children: [],
       };
       const updatedNavigation = addItem(state?.navigation, newItem, parentId);
-      return { navigation: updatedNavigation };
+      return { navigation: updatedNavigation, flattenedNavigation: flattenTree(updatedNavigation) };
     }),
   updateNavItem: (id, updatedItem) =>
     set((state) => {
-      console.log(updateItem(state.navigation, id, updatedItem));
-      return { navigation: updateItem(state.navigation, id, updatedItem) };
+      const nav = updateItem(state.navigation, id, updatedItem);
+      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
     }),
   deleteNavItem: (id) =>
-    set((state) => ({
-      navigation: deleteItem(state.navigation, id),
-    })),
+    set((state) => {
+      const nav = deleteItem(state.navigation, id);
+      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
+    }),
   setDragState: (state: Partial<DragState>) =>
     set((current) => ({
       dragState: { ...current.dragState, ...state },

@@ -44,7 +44,7 @@ const Collapse: React.FC<ICollapseProps> = ({ isOpen, children, duration = 0.35,
         paddingBottom: isOpen ? `${paddingBottom ?? 0}px` : '0',
       }}
       style={{ overflow: 'hidden' }}
-      className="block bg-secondary"
+      className="bg-secondary block"
       transition={{
         duration,
         ease,
