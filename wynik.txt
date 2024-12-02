@@ -62,7 +62,8 @@
     "jest/no-identical-title": "error",
     "jest/prefer-to-have-length": "warn",
     "jest/valid-expect": "error",
-    "react/display-name": "off"
+    "react/display-name": "off",
+    "react/react-in-jsx-scope": "off"
   },
   "ignorePatterns": [
     "node_modules/",
@@ -289,7 +290,7 @@ tsconfig.json
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "incremental": true,
     "plugins": [
       {
@@ -933,7 +934,7 @@ src\app\components\builder-menu\TreeItem.scss
 }
 
 src\app\components\builder-menu\TreeItem.tsx
-import React, { Suspense } from 'react';
+import React, { AriaAttributes, Suspense } from 'react';
 import { forwardRef, HTMLAttributes, useState } from 'react';
 import useNavigationStore, { INavItem } from '@/store/navigationStore';
 import classNames from 'classnames';
@@ -952,7 +953,7 @@ export interface IProps extends Omit<HTMLAttributes<HTMLLIElement>, 'id'> {
   depth?: number;
   disableInteraction?: boolean;
   ghost?: boolean;
-  handleProps?: any;
+  handleProps?: AriaAttributes & HTMLAttributes<HTMLDivElement>;
   indicator?: boolean;
   value?: string | number;
   show?: string;
@@ -1317,7 +1318,8 @@ const MultiLevelMenu: React.FC = () => {
   useEffect(() => {
     const tree = buildTree(initialNavigation);
     setNavigation(tree);
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Pusta tablica, aby efekt uruchomił się tylko raz
 
   const renderMenu = (items: INavItem[] | undefined, level = 0) => {
     if (!Array.isArray(items)) return null;
@@ -1491,18 +1493,16 @@ export type IFormElements = Omit<IInput, 'type'> & {
   iconComponent?: JSX.Element;
   disabled?: boolean;
   formCellType?: IFormElementsTypes;
-  value?: string | number | any | any[];
+  value?: string | number | string[] | number[];
   type?: IFormElementsTypes;
   hidden?: boolean;
   styleClass?: string;
   prefix?: string;
   placeholder?: string;
-  dictName?: string;
   name?: string;
   max?: number;
   min?: number;
   step?: number;
-  [name: string]: any;
 };
 
 export const FormCellConfigDefault = (): IFormElements => ({
@@ -1530,17 +1530,6 @@ const FormElements = ({ formControlName, config }: IProps) => {
   const { errors } = formState || {};
   const { formCellType } = config || {};
 
-  const inputType = useMemo(() => {
-    switch (config.formCellType) {
-      case INPUT_NUMBER:
-        return 'number';
-      case INPUT_SEARCH:
-        return 'search';
-      default:
-        return 'text';
-    }
-  }, [config.formCellType]);
-
   const renderFormElement = useMemo(() => {
     const inputType = (cellType: IFormElementsTypes): InputTypes => {
       if (cellType === INPUT_NUMBER) {
@@ -1560,14 +1549,14 @@ const FormElements = ({ formControlName, config }: IProps) => {
             name={formControlName}
             control={control}
             render={({ field }) => (
-              <Input {...field} config={{ ...config, type: inputType(formCellType) }} error={errors[formControlName]?.message} />
+              <Input {...field} config={{ ...config, type: inputType(formCellType) }} error={errors[formControlName]?.message as string} />
             )}
           />
         );
       default:
         return null;
     }
-  }, [formControlName, control, config]);
+  }, [formControlName, control, config, errors, formCellType]);
 
   return (
     <div className={`form-element ${config.styleClass || ''}`}>
@@ -1597,11 +1586,7 @@ export type IFormElementsTypes =
 src\app\shared\components\icons\CaretIcon.tsx
 import classNames from 'classnames';
 
-interface IProps {
-  rotate?: boolean;
-}
-
-const CaretIcon: React.FC<IProps> = ({ rotate }) => {
+const CaretIcon: React.FC = () => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className={classNames('w-4 h-4 ml-5')}>
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -1695,16 +1680,13 @@ export interface IInput {
   min?: number;
   max?: number;
   step?: number;
-  disableBtnNumbers?: boolean;
   disabled?: boolean;
-  [name: string]: any | any[];
 }
 
 export const inputConfigDefault = (): IInput => ({
   placeholder: '',
   step: 1,
   type: 'text',
-  disableBtnNumbers: false,
 });
 
 src\app\shared\components\input\Input.tsx
@@ -1720,7 +1702,7 @@ interface IProps {
   config: IInput;
   value?: string | number;
   onChange?: (value: string | number) => void;
-  error?: string | any;
+  error?: string | null | undefined;
   touched?: boolean;
 }
 
@@ -1798,12 +1780,9 @@ src\app\shared\helpers\form-config.tsx
 import { IFormElementsConfig, IFormElements } from '@/shared/components/formElements/FormElements.model';
 import { InputType } from '@/shared/components/input/input.types';
 
-export const createConfigForm = (
-  formConfig: IFormElementsConfig,
-  params: { prefix?: string; dictionaries?: Record<string, any> } = {}
-): IFormElements[] => {
+export const createConfigForm = (formConfig: IFormElementsConfig, params: { prefix?: string } = {}): IFormElements[] => {
   return Object.entries(formConfig).map(([name, config]) => {
-    const { prefix, dictionaries } = params;
+    const { prefix } = params;
     const { formCellType } = (config as IFormElements) || {};
     const mergedConfig = {
       ...config,
@@ -1811,7 +1790,6 @@ export const createConfigForm = (
       formCellType: formCellType ?? InputType.INPUT_TEXT,
       header: config.header ?? `${prefix}.${name}`,
       placeholder: config.placeholder ?? `${prefix}.${name}`,
-      dictData: config.dictData ?? (dictionaries?.[config.dictName || name] || []),
     };
     return mergedConfig;
   });
@@ -2450,6 +2428,58 @@ describe('findIdPushChildren', () => {
     const result = findIdPushChildren(999, items, newChildren);
     expect(result).toEqual(items);
   });
+
+  it('should add children to the correct parent', () => {
+    const sourceArray: INavItem[] = [
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child',
+            children: [],
+            level: 1,
+            order: 0,
+          },
+        ],
+        level: 0,
+        order: 0,
+      },
+    ];
+    const newChildren: INavItem[] = [{ id: 3, parentId: 2, label: 'Grandchild', children: [], level: 2, order: 0 }];
+    const result = findIdPushChildren(2, sourceArray, newChildren);
+    expect(result).toEqual([
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child',
+            children: [
+              {
+                id: 3,
+                parentId: 2,
+                label: 'Grandchild',
+                children: [],
+                level: 2,
+                order: 0,
+              },
+            ],
+            level: 1,
+            order: 0,
+          },
+        ],
+        level: 0,
+        order: 0,
+      },
+    ]);
+  });
 });
 
 describe('buildTreeFromFlatten', () => {
@@ -2574,63 +2604,7 @@ describe('updateOrderAndLevel', () => {
     const result = updateOrderAndLevel([]);
     expect(result).toEqual([]);
   });
-});
 
-describe('findIdPushChildren', () => {
-  it('should add children to the correct parent', () => {
-    const sourceArray: INavItem[] = [
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ];
-    const newChildren: INavItem[] = [{ id: 3, parentId: 2, label: 'Grandchild', children: [], level: 2, order: 0 }];
-    const result = findIdPushChildren(2, sourceArray, newChildren);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [
-              {
-                id: 3,
-                parentId: 2,
-                label: 'Grandchild',
-                children: [],
-                level: 2,
-                order: 0,
-              },
-            ],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ]);
-  });
-});
-
-describe('updateOrderAndLevel', () => {
   it('should update levels and orders correctly', () => {
     const items: INavItem[] = [
       {
@@ -2673,11 +2647,6 @@ describe('updateOrderAndLevel', () => {
         ],
       },
     ]);
-  });
-
-  it('should handle an empty array gracefully', () => {
-    const result = updateOrderAndLevel([]);
-    expect(result).toEqual([]);
   });
 });
 
@@ -2814,9 +2783,15 @@ export const adjustTranslate: Modifier = ({ transform }) => {
 src\app\shared\helpers\tree\utils.spec.ts
 import { groupByParent, traverseTree } from './utils';
 
+interface TreeNode {
+  id: number;
+  parentId?: number | null;
+  children?: TreeNode[];
+}
+
 describe('traverseTree', () => {
   it('should find an element at the root level', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [] },
       { id: 2, children: [] },
     ];
@@ -2825,7 +2800,7 @@ describe('traverseTree', () => {
   });
 
   it('should find an element at a nested level', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [{ id: 2, children: [] }] },
       { id: 3, children: [] },
     ];
@@ -2834,7 +2809,7 @@ describe('traverseTree', () => {
   });
 
   it('should return undefined if element does not exist', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, children: [{ id: 2, children: [] }] },
       { id: 3, children: [] },
     ];
@@ -2843,14 +2818,14 @@ describe('traverseTree', () => {
   });
 
   it('should handle empty input gracefully', () => {
-    const result = traverseTree<{ id: number; children?: any[] }>([], (node) => node?.id === 1);
+    const result = traverseTree<TreeNode>([], (node) => node.id === 1);
     expect(result).toBeUndefined();
   });
 });
 
 describe('groupByParent', () => {
   it('should group items by parentId', () => {
-    const items = [
+    const items: TreeNode[] = [
       { id: 1, parentId: null },
       { id: 2, parentId: 1 },
       { id: 3, parentId: 1 },
@@ -2864,12 +2839,12 @@ describe('groupByParent', () => {
   });
 
   it('should return empty map for empty input', () => {
-    const result = groupByParent([]);
+    const result = groupByParent<TreeNode>([]);
     expect(result.size).toBe(0);
   });
 
   it('should group items with no children', () => {
-    const items = [{ id: 1, parentId: null }];
+    const items: TreeNode[] = [{ id: 1, parentId: null }];
     const result = groupByParent(items);
     expect(result.get(null)).toEqual([{ id: 1, parentId: null }]);
     expect(result.get(1)).toBeUndefined();
@@ -2877,7 +2852,7 @@ describe('groupByParent', () => {
 });
 
 src\app\shared\helpers\tree\utils.ts
-type TreeCallback<T> = (node: T) => boolean;
+export type TreeCallback<T> = (node: T) => boolean;
 
 export const traverseTree = <T extends { children?: T[] }>(items: T[], callback: TreeCallback<T>): T | undefined => {
   for (const node of items) {
@@ -2893,8 +2868,10 @@ export const traverseTree = <T extends { children?: T[] }>(items: T[], callback:
 export const groupByParent = <T extends { parentId?: string | number | null }>(items: T[]): Map<string | number | null, T[]> => {
   return items.reduce((map, item) => {
     const parentId = item.parentId ?? null;
-    if (!map.has(parentId)) map.set(parentId, []);
-    map.get(parentId)?.push(item);
+    if (!map.has(parentId)) {
+      map.set(parentId, []);
+    }
+    map.get(parentId)!.push(item);
     return map;
   }, new Map<string | number | null, T[]>());
 };
