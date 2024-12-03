@@ -7,7 +7,7 @@ import { produce } from 'immer';
 export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]): INavItem[] => {
   const map = new Map<string | number, IFlattenedItem>();
   const root: IFlattenedItem[] = [];
-  const idSet = new Set<string | number>(); // Track IDs for duplicates
+  const idSet = new Set<string | number>();
 
   flattenedItems?.forEach((item) => {
     const { id, parentId, ...rest } = item;
@@ -72,7 +72,7 @@ export const flattenTreeIterativeWithImmer = produce((draft: IFlattenedItem[], i
       order: index,
     })) ?? [];
 
-  const visited = new Set<string | number>(); // Track visited nodes for circular reference detection
+  const visited = new Set<string | number>();
 
   while (stack.length > 0) {
     const { node, parentId, level, order } = stack.shift()!;
