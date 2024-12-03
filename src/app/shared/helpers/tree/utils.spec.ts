@@ -1,4 +1,4 @@
-import { traverseTreeIteratively } from './utils';
+import { memoize, traverseTreeIteratively } from './utils';
 
 interface TreeNode {
   id: number;
@@ -37,5 +37,25 @@ describe('traverseTreeIteratively', () => {
   it('should handle empty input gracefully', () => {
     const result = traverseTreeIteratively<TreeNode>([], (node) => node.id === 1);
     expect(result).toBeUndefined();
+  });
+});
+
+describe('memoize', () => {
+  it('should cache results for the same inputs', () => {
+    const mockFn = jest.fn((x) => x * 2);
+    const memoizedFn = memoize(mockFn);
+
+    expect(memoizedFn(2)).toBe(4);
+    expect(memoizedFn(2)).toBe(4);
+    expect(mockFn).toHaveBeenCalledTimes(1);
+  });
+
+  it('should re-evaluate for different inputs', () => {
+    const mockFn = jest.fn((x) => x * 2);
+    const memoizedFn = memoize(mockFn);
+
+    expect(memoizedFn(2)).toBe(4);
+    expect(memoizedFn(3)).toBe(6);
+    expect(mockFn).toHaveBeenCalledTimes(2);
   });
 });

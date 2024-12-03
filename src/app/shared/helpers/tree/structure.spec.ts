@@ -1,12 +1,93 @@
 import { INavItem } from '@/src/app/store/navigationStore';
 import {
   adjustTranslate,
+  buildTreeFromFlatten,
   buildTreeFromFlattenIteratively,
   findIdPushChildren,
+  findItem,
   flattenTreeIterativeWithImmer,
   updateOrderAndLevel,
 } from './structure';
 import { Modifier } from '@dnd-kit/core';
+
+describe('buildTreeFromFlatten', () => {
+  it('should return an empty array for an empty input', () => {
+    const result = buildTreeFromFlatten([]);
+    expect(result).toEqual([]);
+  });
+
+  it('should build a single-level tree', () => {
+    const items = [
+      { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
+      { id: 2, parentId: 1, label: 'Child', order: 1, level: 1 },
+    ];
+    const result = buildTreeFromFlatten(items);
+    expect(result).toEqual([
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        order: 0,
+        level: 0,
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child',
+            order: 1,
+            level: 1,
+            children: [],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should handle multiple levels of nesting', () => {
+    const items = [
+      { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
+      { id: 2, parentId: 1, label: 'Child 1', order: 1, level: 1 },
+      { id: 3, parentId: 2, label: 'Child 2', order: 2, level: 2 },
+    ];
+    const result = buildTreeFromFlatten(items);
+    expect(result).toEqual([
+      {
+        id: 1,
+        parentId: null,
+        label: 'Root',
+        order: 0,
+        level: 0,
+        children: [
+          {
+            id: 2,
+            parentId: 1,
+            label: 'Child 1',
+            order: 1,
+            level: 1,
+            children: [
+              {
+                id: 3,
+                parentId: 2,
+                label: 'Child 2',
+                order: 2,
+                level: 2,
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it('should throw an error for invalid parent references', () => {
+    const items = [
+      { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
+      { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
+    ];
+    expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
+  });
+});
 
 describe('flattenTreeIterativeWithImmer', () => {
   it('should flatten a tree with a single root element', () => {
@@ -293,7 +374,7 @@ describe('buildTreeFromFlattenIteratively', () => {
       { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
-    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with id 999 not found for item 2');
+    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with parentId 999 not found for id 2');
   });
 
   it('should handle circular references gracefully', () => {
@@ -301,7 +382,7 @@ describe('buildTreeFromFlattenIteratively', () => {
       { id: 1, parentId: 2, label: 'Circular Parent', level: 0, order: 0 },
       { id: 2, parentId: 1, label: 'Circular Child', level: 1, order: 0 },
     ];
-    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with id 2 not found for item 1');
+    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with parentId 2 not found for id 1');
   });
 
   it('should handle duplicate ids', () => {
@@ -483,5 +564,17 @@ describe('adjustTranslate', () => {
     };
     const result = adjustTranslate(input);
     expect(result).toEqual({ x: 10000, y: 20000, scaleX: 1, scaleY: 1 });
+  });
+});
+
+describe('findItem', () => {
+  const items = [{ id: 1 }, { id: 2 }, { id: 3 }];
+
+  it('should find the item if it exists', () => {
+    expect(findItem(items, 2)).toEqual({ id: 2 });
+  });
+
+  it('should throw an error if the item does not exist', () => {
+    expect(() => findItem(items, 999)).toThrow('Item with id 999 not found');
   });
 });

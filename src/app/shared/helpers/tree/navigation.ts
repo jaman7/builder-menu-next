@@ -9,25 +9,23 @@ export const getDragDepth = (offset: number, indentationWidth: number): number =
 };
 
 export const getMaxDepth = ({ previousItem }: { previousItem: IFlattenedItem }): number => {
-  if (previousItem) return previousItem.level + 1;
-  return 0;
+  return previousItem ? previousItem.level + 1 : 0;
 };
 
 export const getMinDepth = ({ nextItem }: { nextItem: IFlattenedItem }): number => {
-  if (nextItem) return nextItem.level;
-  return 0;
+  return nextItem ? nextItem.level : 0;
 };
 
-const countChildren = (items: INavItem[], count = 0): number => {
+const countChildrenhelper = (items: INavItem[], count = 0): number => {
   return items.reduce((acc, { children }) => {
-    if (children?.length) return countChildren(children, acc + 1);
+    if (children?.length) return countChildrenhelper(children, acc + 1);
     return acc + 1;
   }, count);
 };
 
 export const childrenCount = (items: INavItem[], id: UniqueIdentifier | null): number => {
   const item = findItemDeep(items, id!);
-  return item ? countChildren(item?.children ?? []) : 0;
+  return item ? countChildrenhelper(item?.children ?? []) : 0;
 };
 
 export const childrensItems = (items: INavItem[], id: UniqueIdentifier): INavItem[] => {

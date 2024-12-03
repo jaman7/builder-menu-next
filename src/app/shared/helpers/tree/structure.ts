@@ -4,6 +4,26 @@ import { Modifier, UniqueIdentifier } from '@dnd-kit/core';
 import { memoize } from './utils';
 import { produce } from 'immer';
 
+export const buildTreeFromFlatten = (flattenedItems: IFlattenedItem[]): INavItem[] => {
+  const root: INavItem = { id: 'root', children: [], label: 'root' };
+  const nodes: Record<string, INavItem> = { [root.id]: root };
+  const items = flattenedItems?.map((item) => ({ ...item, children: [] })) ?? [];
+  for (const item of items) {
+    const { id, children, label } = item;
+    const parentId = item?.parentId ?? root?.id;
+    const parent = nodes[parentId] ?? findItem(items, parentId);
+    if (!parent) {
+      throw new Error(`Parent with id ${parentId} not found`);
+    }
+    if (!parent.children) {
+      parent.children = [];
+    }
+    nodes[id] = { id, children, label };
+    parent.children.push(item);
+  }
+  return root.children ?? [];
+};
+
 export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]): INavItem[] => {
   const map = new Map<string | number, IFlattenedItem>();
   const root: IFlattenedItem[] = [];
@@ -19,7 +39,7 @@ export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]
     } else if (parentId && map.has(parentId)) {
       map.get(parentId)!.children!.push(newItem);
     } else {
-      throw new Error(`Parent with id ${parentId} not found for item ${id}`);
+      throw new Error(`Parent with parentId ${parentId} not found for id ${id}`);
     }
     map.set(id, newItem);
   });
