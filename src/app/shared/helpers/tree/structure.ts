@@ -4,28 +4,6 @@ import { Modifier, UniqueIdentifier } from '@dnd-kit/core';
 import { memoize } from './utils';
 import { produce } from 'immer';
 
-// export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]): INavItem[] => {
-//   const map = new Map<string | number, IFlattenedItem>();
-//   const root: IFlattenedItem[] = [];
-
-//   flattenedItems?.forEach((item) => {
-//     const { id, parentId, ...rest } = item;
-//     const newItem: IFlattenedItem = { id, parentId, ...rest, children: [] };
-
-//     if (parentId === null) {
-//       root.push(newItem);
-//     } else if (parentId && map?.has(parentId)) {
-//       map.get(parentId)!.children!.push(newItem);
-//     } else {
-//       throw new Error(`Parent with id ${parentId} not found for item ${id}`);
-//     }
-
-//     map.set(id, newItem);
-//   });
-
-//   return root;
-// };
-
 export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]): INavItem[] => {
   const map = new Map<string | number, IFlattenedItem>();
   const root: IFlattenedItem[] = [];
@@ -84,37 +62,6 @@ export const updateOrderAndLevel = (items: INavItem[], currentLevel: number = 0)
     return updatedItem;
   });
 };
-
-// export const flattenTreeIterativeWithImmer = produce((draft: IFlattenedItem[], items: INavItem[]) => {
-//   const stack: Array<{ node: INavItem; parentId: string | number | null; level: number; order: number }> =
-//     items?.map((node, index) => ({
-//       node,
-//       parentId: null,
-//       level: 0,
-//       order: index,
-//     })) ?? [];
-
-//   while (stack.length > 0) {
-//     const { node, parentId, level, order } = stack.shift()!;
-//     draft.push({
-//       ...node,
-//       parentId,
-//       level,
-//       order,
-//     });
-
-//     if (node.children?.length) {
-//       stack.unshift(
-//         ...(node?.children?.map((child, index) => ({
-//           node: child,
-//           parentId: node.id,
-//           level: level + 1,
-//           order: index,
-//         })) ?? [])
-//       );
-//     }
-//   }
-// });
 
 export const flattenTreeIterativeWithImmer = produce((draft: IFlattenedItem[], items: INavItem[]) => {
   const stack: Array<{ node: INavItem; parentId: string | number | null; level: number; order: number }> =
