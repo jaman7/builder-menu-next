@@ -13,8 +13,10 @@ describe('addItem', () => {
         order: 0,
       },
     ];
+
     const newItem: INavItem = { id: 3, parentId: 2, label: 'Grandchild', children: [] };
     const result = addItem(items, newItem, 2);
+
     expect(result).toEqual([
       {
         id: 1,

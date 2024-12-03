@@ -2,7 +2,8 @@ import React, { memo, useEffect } from 'react';
 import classNames from 'classnames';
 import CaretIcon from '@/shared/components/icons/CaretIcon';
 import useNavigationStore, { INavItem } from '@/store/navigationStore';
-import { buildTree } from '@/shared/helpers/tree';
+import { buildTreeFromFlattenIteratively } from '@/shared/helpers/tree';
+import { IFlattenedItem } from '../builder-menu/MenuEditor.model';
 import './MultiLevelMenu.scss';
 
 const initialNavigation: INavItem[] = [
@@ -26,7 +27,7 @@ const MultiLevelMenu: React.FC = () => {
   const { navigation, setNavigation } = useNavigationStore();
 
   useEffect(() => {
-    const tree = buildTree(initialNavigation);
+    const tree = buildTreeFromFlattenIteratively(initialNavigation as IFlattenedItem[]);
     setNavigation(tree);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Pusta tablica, aby efekt uruchomił się tylko raz

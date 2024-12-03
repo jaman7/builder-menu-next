@@ -1,19 +1,19 @@
-import { IFlattenedItem } from '@/src/app/components/builder-menu/MenuEditor.model';
+import { IFlattenedItem, IProjected } from '@/src/app/components/builder-menu/MenuEditor.model';
 import { INavItem } from '@/src/app/store/navigationStore';
 import { UniqueIdentifier } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
-import { traverseTree } from './utils';
+import { traverseTreeIteratively } from './utils';
 
 export const getDragDepth = (offset: number, indentationWidth: number): number => {
   return Math.round(offset / indentationWidth);
 };
 
-export const getMaxDepth = ({ previousItem }: { previousItem: IFlattenedItem }) => {
+export const getMaxDepth = ({ previousItem }: { previousItem: IFlattenedItem }): number => {
   if (previousItem) return previousItem.level + 1;
   return 0;
 };
 
-export const getMinDepth = ({ nextItem }: { nextItem: IFlattenedItem }) => {
+export const getMinDepth = ({ nextItem }: { nextItem: IFlattenedItem }): number => {
   if (nextItem) return nextItem.level;
   return 0;
 };
@@ -25,17 +25,17 @@ const countChildren = (items: INavItem[], count = 0): number => {
   }, count);
 };
 
-export const childrenCount = (items: INavItem[], id: UniqueIdentifier | null) => {
+export const childrenCount = (items: INavItem[], id: UniqueIdentifier | null): number => {
   const item = findItemDeep(items, id!);
   return item ? countChildren(item?.children ?? []) : 0;
 };
 
-export const childrensItems = (items: INavItem[], id: UniqueIdentifier) => {
-  const item = findItemDeep(items, id);
-  return item ? item.children : [];
+export const childrensItems = (items: INavItem[], id: UniqueIdentifier): INavItem[] => {
+  return findItemDeep(items, id)?.children ?? [];
 };
 
-export const findItemDeep = (items: INavItem[], id: string | number): INavItem | undefined => traverseTree(items, (item) => item.id === id);
+export const findItemDeep = (items: INavItem[], id: string | number): INavItem | undefined =>
+  traverseTreeIteratively(items, (item) => item.id === id);
 
 export const findMaxId = (items: INavItem[]): number => {
   let maxId = 0;
@@ -65,7 +65,7 @@ export const levelProjection = (
   overId: UniqueIdentifier,
   dragOffset: number,
   indentationWidth: number
-) => {
+): IProjected => {
   const overItemIndex = items.findIndex(({ id }) => id === overId);
   const activeItemIndex = items.findIndex(({ id }) => id === activeId);
   const activeItem = items[activeItemIndex];

@@ -1,81 +1,17 @@
 import { INavItem } from '@/src/app/store/navigationStore';
 import {
   adjustTranslate,
-  buildTree,
-  buildTreeFromFlatten,
+  buildTreeFromFlattenIteratively,
   findIdPushChildren,
-  flattenTree,
-  removeChildrenOf,
+  flattenTreeIterativeWithImmer,
   updateOrderAndLevel,
 } from './structure';
-import { IFlattenedItem } from '@/src/app/components/builder-menu/MenuEditor.model';
 import { Modifier } from '@dnd-kit/core';
 
-describe('buildTree', () => {
-  it('should return an empty array for an empty input', () => {
-    expect(buildTree([])).toEqual([]);
-  });
-
-  it('should build a tree with a single root element', () => {
-    const items = [{ id: 1, parentId: null, label: 'Root' }];
-    const result = buildTree(items);
-    expect(result).toEqual([{ id: 1, parentId: null, label: 'Root', children: [] }]);
-  });
-
-  it('should build a tree with nested elements', () => {
-    const items = [
-      { id: 1, parentId: null, label: 'Root' },
-      { id: 2, parentId: 1, label: 'Child' },
-    ];
-    const result = buildTree(items);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [{ id: 2, parentId: 1, label: 'Child', children: [] }],
-      },
-    ]);
-  });
-
-  it('should handle multiple levels of nesting', () => {
-    const items = [
-      { id: 1, parentId: null, label: 'Root' },
-      { id: 2, parentId: 1, label: 'Child 1' },
-      { id: 3, parentId: 2, label: 'Child 2' },
-    ];
-    const result = buildTree(items);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child 1',
-            children: [{ id: 3, parentId: 2, label: 'Child 2', children: [] }],
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should ignore items with missing or invalid parentId', () => {
-    const items = [
-      { id: 1, parentId: null, label: 'Root' },
-      { id: 2, parentId: 999, label: 'Orphan' },
-    ];
-    const result = buildTree(items);
-    expect(result).toEqual([{ id: 1, parentId: null, label: 'Root', children: [] }]);
-  });
-});
-
-describe('flattenTree', () => {
+describe('flattenTreeIterativeWithImmer', () => {
   it('should flatten a tree with a single root element', () => {
     const items: INavItem[] = [{ id: 1, parentId: null, label: 'Root', children: [], level: 0, order: 0 }];
-    const result = flattenTree(items);
+    const result = flattenTreeIterativeWithImmer([], items);
     expect(result).toEqual([{ id: 1, parentId: null, label: 'Root', level: 0, order: 0, children: [] }]);
   });
 
@@ -90,7 +26,7 @@ describe('flattenTree', () => {
         order: 0,
       },
     ];
-    const result = flattenTree(items);
+    const result = flattenTreeIterativeWithImmer([], items);
     expect(result).toEqual([
       {
         id: 1,
@@ -124,7 +60,7 @@ describe('flattenTree', () => {
         order: 0,
       },
     ];
-    const result = flattenTree(items);
+    const result = flattenTreeIterativeWithImmer([], items);
     expect(result).toEqual([
       {
         id: 1,
@@ -154,48 +90,23 @@ describe('flattenTree', () => {
       { id: 3, parentId: 2, label: 'Child 2', level: 2, order: 0, children: [] },
     ]);
   });
-});
 
-describe('removeChildrenOf', () => {
-  it('should remove all children of a given parentId', () => {
-    const items: IFlattenedItem[] = [
-      {
-        id: 1,
-        label: 'Promocje',
-        parentId: null,
-        level: 0,
-        order: 0,
-      },
-      {
-        id: 2,
-        label: 'Promocje 1',
-        parentId: 1,
-        level: 1,
-        order: 0,
-      },
-      {
-        id: 4,
-        label: 'Promocje 3',
-        parentId: 2,
-        level: 2,
-        order: 0,
-      },
-      {
-        id: 5,
-        label: 'Promocje 4',
-        parentId: 2,
-        level: 2,
-        order: 1,
-      },
+  it('should handle circular references gracefully', () => {
+    const items = [
+      { id: 1, parentId: null, label: 'Root', children: [{ id: 2, parentId: 1 }] },
+      { id: 2, parentId: 1, label: 'Child', children: [{ id: 1, parentId: 2 }] }, // Circular reference
     ];
-    const result = removeChildrenOf(items, [])[1];
-    expect(result).toEqual({ id: 2, parentId: 1, label: 'Promocje 1', level: 1, order: 0 });
+    expect(() => flattenTreeIterativeWithImmer([], items)).toThrow('Circular reference detected');
   });
 
-  it('should handle empty input gracefully', () => {
-    const items: IFlattenedItem[] = [];
-    const result = removeChildrenOf(items, [1]);
-    expect(result).toEqual([]);
+  it('should handle large trees efficiently', () => {
+    const items = Array.from({ length: 1000 }, (_, i) => ({
+      id: i + 1,
+      parentId: i > 0 ? i : null,
+      children: [],
+    }));
+    const result = flattenTreeIterativeWithImmer([], items);
+    expect(result).toHaveLength(1000);
   });
 });
 
@@ -292,11 +203,24 @@ describe('findIdPushChildren', () => {
       },
     ]);
   });
+
+  it('should do nothing when copyChildren is empty', () => {
+    const items = [{ id: 1, children: [] }];
+    const result = findIdPushChildren(1, items, []);
+    expect(result).toEqual([{ id: 1, children: [] }]);
+  });
+
+  it('should not modify the tree when findId does not exist', () => {
+    const items = [{ id: 1, children: [] }];
+    const newChildren = [{ id: 2 }];
+    const result = findIdPushChildren(999, items, newChildren);
+    expect(result).toEqual(items);
+  });
 });
 
-describe('buildTreeFromFlatten', () => {
+describe('buildTreeFromFlattenIteratively', () => {
   it('should return an empty array for an empty input', () => {
-    const result = buildTreeFromFlatten([]);
+    const result = buildTreeFromFlattenIteratively([]);
     expect(result).toEqual([]);
   });
 
@@ -305,7 +229,7 @@ describe('buildTreeFromFlatten', () => {
       { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
       { id: 2, parentId: 1, label: 'Child', order: 1, level: 1 },
     ];
-    const result = buildTreeFromFlatten(items);
+    const result = buildTreeFromFlattenIteratively(items);
     expect(result).toEqual([
       {
         id: 1,
@@ -333,7 +257,7 @@ describe('buildTreeFromFlatten', () => {
       { id: 2, parentId: 1, label: 'Child 1', order: 1, level: 1 },
       { id: 3, parentId: 2, label: 'Child 2', order: 2, level: 2 },
     ];
-    const result = buildTreeFromFlatten(items);
+    const result = buildTreeFromFlattenIteratively(items);
     expect(result).toEqual([
       {
         id: 1,
@@ -369,7 +293,23 @@ describe('buildTreeFromFlatten', () => {
       { id: 1, parentId: null, label: 'Root', order: 0, level: 0 },
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
-    expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
+    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with id 999 not found for item 2');
+  });
+
+  it('should handle circular references gracefully', () => {
+    const items = [
+      { id: 1, parentId: 2, label: 'Circular Parent', level: 0, order: 0 },
+      { id: 2, parentId: 1, label: 'Circular Child', level: 1, order: 0 },
+    ];
+    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Parent with id 2 not found for item 1');
+  });
+
+  it('should handle duplicate ids', () => {
+    const items = [
+      { id: 1, parentId: null, label: 'Root', level: 0, order: 0 },
+      { id: 1, parentId: 1, label: 'Duplicate Child', level: 1, order: 0 },
+    ];
+    expect(() => buildTreeFromFlattenIteratively(items)).toThrow('Duplicate id 1 found');
   });
 });
 
@@ -460,6 +400,33 @@ describe('updateOrderAndLevel', () => {
       },
     ]);
   });
+
+  it('should not modify already ordered items', () => {
+    const items = [{ id: 1, order: 0, level: 0, children: [] }];
+    const result = updateOrderAndLevel(items);
+    expect(result).toEqual(items);
+  });
+
+  it('should handle deeply nested levels', () => {
+    const items = [
+      {
+        id: 1,
+        children: [
+          {
+            id: 2,
+            children: [
+              {
+                id: 3,
+                children: [{ id: 4, children: [] }],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    const result = updateOrderAndLevel(items);
+    expect(result).toMatchSnapshot();
+  });
 });
 
 describe('adjustTranslate', () => {
@@ -474,11 +441,47 @@ describe('adjustTranslate', () => {
       over: null,
       overlayNodeRect: null,
       scrollableAncestorRects: [],
-      scrollableAncestors: [], // Dodano brakujące pole
+      scrollableAncestors: [],
       windowRect: null,
     };
 
     const result = adjustTranslate(input);
     expect(result).toEqual(input.transform);
+  });
+
+  it('should handle negative transform values', () => {
+    const input: Parameters<Modifier>[0] = {
+      transform: { x: -50, y: -100, scaleX: 1, scaleY: 1 },
+      activatorEvent: null,
+      active: null,
+      activeNodeRect: null,
+      draggingNodeRect: null,
+      containerNodeRect: null,
+      over: null,
+      overlayNodeRect: null,
+      scrollableAncestorRects: [],
+      scrollableAncestors: [],
+      windowRect: null,
+    };
+    const result = adjustTranslate(input);
+    expect(result).toEqual({ x: -50, y: -100, scaleX: 1, scaleY: 1 });
+  });
+
+  it('should handle large transform values', () => {
+    const input: Parameters<Modifier>[0] = {
+      transform: { x: 10000, y: 20000, scaleX: 1, scaleY: 1 },
+      activatorEvent: null,
+      active: null,
+      activeNodeRect: null,
+      draggingNodeRect: null,
+      containerNodeRect: null,
+      over: null,
+      overlayNodeRect: null,
+      scrollableAncestorRects: [],
+      scrollableAncestors: [],
+      windowRect: null,
+    };
+    const result = adjustTranslate(input);
+    expect(result).toEqual({ x: 10000, y: 20000, scaleX: 1, scaleY: 1 });
   });
 });

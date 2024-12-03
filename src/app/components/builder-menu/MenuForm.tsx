@@ -83,7 +83,7 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
         <div className="grid grid-cols-[1fr,auto] gap-x-3">
           <div className="block w-full">
             {formElements?.map((config) => (
-              <FormElements key={config.formControlName} formControlName={config.formControlName} config={config} />
+              <FormElements key={config.formControlName} formControlName={config?.formControlName as string} config={config} />
             ))}
           </div>
 

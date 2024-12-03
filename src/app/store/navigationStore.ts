@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { addItem, deleteItem, findMaxId, flattenTree, updateItem } from '@/shared/helpers/tree';
+import { addItem, deleteItem, findMaxId, flattenTreeIterativeWithImmer, flattenTreeMemoized, updateItem } from '@/shared/helpers/tree';
 import { IFlattenedItem } from '../components/builder-menu/MenuEditor.model';
 
 export interface INavItem {
@@ -43,7 +43,7 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
   openCollapseMap: {},
   setNavigation: (items: INavItem[]) =>
     set(() => {
-      const flattened = flattenTree(items);
+      const flattened = flattenTreeMemoized([], items);
       return { navigation: items, flattenedNavigation: flattened };
     }),
   addNavItem: (item, parentId = null) =>
@@ -59,17 +59,17 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
         children: [],
       };
       const updatedNavigation = addItem(state?.navigation, newItem, parentId);
-      return { navigation: updatedNavigation, flattenedNavigation: flattenTree(updatedNavigation) };
+      return { navigation: updatedNavigation, flattenedNavigation: flattenTreeIterativeWithImmer([], updatedNavigation) };
     }),
   updateNavItem: (id, updatedItem) =>
     set((state) => {
       const nav = updateItem(state.navigation, id, updatedItem);
-      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
+      return { navigation: nav, flattenedNavigation: flattenTreeIterativeWithImmer([], nav) };
     }),
   deleteNavItem: (id) =>
     set((state) => {
       const nav = deleteItem(state.navigation, id);
-      return { navigation: nav, flattenedNavigation: flattenTree(nav) };
+      return { navigation: nav, flattenedNavigation: flattenTreeIterativeWithImmer([], nav) };
     }),
   setDragState: (state: Partial<DragState>) =>
     set((current) => ({

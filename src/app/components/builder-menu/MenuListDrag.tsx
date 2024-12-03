@@ -20,7 +20,7 @@ import { createPortal } from 'react-dom';
 import SortableItem from './SortableItem';
 import {
   adjustTranslate,
-  buildTreeFromFlatten,
+  buildTreeFromFlattenIteratively,
   childrenCount,
   childrensItems,
   findIdPushChildren,
@@ -94,7 +94,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
         resetState();
         return;
       }
-      const { level, parentId } = projected;
+      const { level, parentId } = projected || {};
       const clonedItems = [...flattenedMenu];
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
@@ -107,7 +107,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
       const activeTreeItemChildren = activeTreeItem.children ?? [];
       clonedItems[activeIndex] = { ...activeTreeItem, level: level ?? 0, parentId: parentId ?? null };
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
-      const newItems = buildTreeFromFlatten(sortedItems);
+      const newItems = buildTreeFromFlattenIteratively(sortedItems);
       const newNavigation = updateOrderAndLevel(findIdPushChildren(active.id, newItems, activeTreeItemChildren));
       setNavigation(newNavigation);
       resetDragState();
