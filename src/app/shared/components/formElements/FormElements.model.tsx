@@ -6,6 +6,7 @@ export interface IFormElementsConfig {
 }
 
 export type IFormElements = Omit<IInput, 'type'> & {
+  formControlName?: string;
   config?: IFormElements;
   header?: string;
   isHeader?: boolean;
