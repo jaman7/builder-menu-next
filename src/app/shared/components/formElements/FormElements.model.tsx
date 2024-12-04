@@ -13,7 +13,7 @@ export type IFormElements = Omit<IInput, 'type'> & {
   iconComponent?: JSX.Element;
   disabled?: boolean;
   formCellType?: IFormElementsTypes;
-  value?: string | number | string[] | number[];
+  value?: string | number | string[] | number[] | null;
   type?: IFormElementsTypes;
   hidden?: boolean;
   styleClass?: string;

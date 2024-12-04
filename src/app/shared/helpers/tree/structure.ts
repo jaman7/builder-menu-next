@@ -1,15 +1,13 @@
 import { INavItem } from '@/src/app/store/navigationStore';
 import { IFlattenedItem } from '@/src/app/components/builder-menu/MenuEditor.model';
 import { Modifier, UniqueIdentifier } from '@dnd-kit/core';
-import { memoize } from './utils';
-import { produce } from 'immer';
 
 export const buildTreeFromFlatten = (flattenedItems: IFlattenedItem[]): INavItem[] => {
   const root: INavItem = { id: 'root', children: [], label: 'root' };
   const nodes: Record<string, INavItem> = { [root.id]: root };
   const items = flattenedItems?.map((item) => ({ ...item, children: [] })) ?? [];
   for (const item of items) {
-    const { id, children, label } = item;
+    const { id, children, label } = item || {};
     const parentId = item?.parentId ?? root?.id;
     const parent = nodes[parentId] ?? findItem(items, parentId);
     if (!parent) {
@@ -66,62 +64,47 @@ export const findIdPushChildren = (findId: number | string, sourceArray: INavIte
 };
 
 export const findItem = (items: INavItem[], itemId: UniqueIdentifier): INavItem => {
-  const item = items.find(({ id }) => id === itemId);
+  const item = items?.find(({ id }) => id === itemId);
   if (!item) throw new Error(`Item with id ${itemId} not found`);
   return item;
 };
 
 export const updateOrderAndLevel = (items: INavItem[], currentLevel: number = 0): INavItem[] => {
-  return items.map((item, index) => {
-    const updatedItem: INavItem = {
-      ...item,
-      order: index,
-      level: currentLevel,
-      children: item.children ? updateOrderAndLevel(item.children, currentLevel + 1) : [],
-    };
-    return updatedItem;
-  });
+  return (
+    items?.map((item, index) => {
+      const updatedItem: INavItem = {
+        ...item,
+        order: index,
+        level: currentLevel,
+        children: item.children ? updateOrderAndLevel(item.children, currentLevel + 1) : [],
+      };
+      return updatedItem;
+    }) ?? []
+  );
 };
 
-export const flattenTreeIterativeWithImmer = produce((draft: IFlattenedItem[], items: INavItem[]) => {
-  const stack: Array<{ node: INavItem; parentId: string | number | null; level: number; order: number }> =
-    items?.map((node, index) => ({
-      node,
-      parentId: null,
-      level: 0,
-      order: index,
-    })) ?? [];
+export const flatten = (items: INavItem[], parentId: string | number | null = null, level = 0): IFlattenedItem[] => {
+  return (
+    items?.reduce<IFlattenedItem[]>((acc, item, index) => {
+      const children = item.children ?? [];
+      return [...acc, { ...item, parentId, level, order: index }, ...flatten(children, item.id, level + 1)];
+    }, []) ?? []
+  );
+};
 
-  const visited = new Set<string | number>();
+export const flattenTree = (items: INavItem[]): IFlattenedItem[] => {
+  return flatten(items);
+};
 
-  while (stack.length > 0) {
-    const { node, parentId, level, order } = stack.shift()!;
-    if (visited.has(node.id)) {
-      throw new Error('Circular reference detected');
+export const removeChildrenOf = (items: IFlattenedItem[], ids: (string | number)[]): IFlattenedItem[] => {
+  const excludeParentIds = [...ids];
+  return items?.filter((item) => {
+    if (item.parentId && excludeParentIds.includes(item.parentId)) {
+      return false;
     }
-    visited.add(node.id);
-
-    draft.push({
-      ...node,
-      parentId,
-      level,
-      order,
-    });
-
-    if (node.children?.length) {
-      stack.unshift(
-        ...(node?.children?.map((child, index) => ({
-          node: child,
-          parentId: node.id,
-          level: level + 1,
-          order: index,
-        })) ?? [])
-      );
-    }
-  }
-});
-
-export const flattenTreeMemoized = memoize(flattenTreeIterativeWithImmer);
+    return true;
+  });
+};
 
 export const adjustTranslate: Modifier = ({ transform }) => {
   return {

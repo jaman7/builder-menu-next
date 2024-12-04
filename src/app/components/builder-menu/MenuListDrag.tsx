@@ -23,8 +23,9 @@ import {
   buildTreeFromFlatten,
   childrenCount,
   childrensItems,
-  findIdPushChildren,
+  flattenTree,
   levelProjection,
+  removeChildrenOf,
   updateOrderAndLevel,
 } from '@/shared/helpers/tree';
 
@@ -34,8 +35,19 @@ interface IProps {
 
 const MenuListDrag: React.FC<IProps> = ({ style }) => {
   const { navigation, setDragState, resetDragState, setNavigation } = useNavigationStore();
-  const flattenedMenu = useNavigationStore((state) => state.flattenedNavigation);
   const { activeId, overId, offsetLeft } = useNavigationStore((state) => state.dragState);
+
+  const flattenedMenu = useMemo(() => {
+    const flattenedTree = flattenTree(navigation);
+    const collapsedItems = flattenedTree.reduce<(string | number)[]>((acc, { children, collapsed, id }) => {
+      if (collapsed && children && children?.length > 0) {
+        return [...acc, id];
+      }
+      return acc;
+    }, []);
+
+    return removeChildrenOf(flattenedTree, activeId ? [activeId, ...collapsedItems] : collapsedItems);
+  }, [activeId, navigation]);
 
   const activeItem = useMemo(() => (activeId ? flattenedMenu?.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
 
@@ -94,25 +106,25 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
         resetState();
         return;
       }
-      const { level, parentId } = projected || {};
-      const clonedItems = [...flattenedMenu];
+
+      const { level, parentId } = projected;
+      const clonedItems = flattenTree(navigation);
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
       if (activeIndex < 0 || overIndex < 0) {
         resetState();
         return;
       }
-
-      const activeTreeItem = { ...clonedItems[activeIndex] };
-      const activeTreeItemChildren = activeTreeItem.children ?? [];
+      const activeTreeItem = clonedItems[activeIndex];
       clonedItems[activeIndex] = { ...activeTreeItem, level: level ?? 0, parentId: parentId ?? null };
       const sortedItems = arrayMove(clonedItems, activeIndex, overIndex);
       const newItems = buildTreeFromFlatten(sortedItems);
-      const newNavigation = updateOrderAndLevel(findIdPushChildren(active.id, newItems, activeTreeItemChildren));
-      setNavigation(newNavigation);
+      setNavigation(updateOrderAndLevel(newItems));
       resetDragState();
+
+      resetState();
     },
-    [flattenedMenu, projected, resetDragState, resetState, setNavigation]
+    [projected, navigation, resetDragState, resetState, setNavigation]
   );
 
   return (

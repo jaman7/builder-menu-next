@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
 interface IPadding {
@@ -27,9 +27,13 @@ const Collapse: React.FC<ICollapseProps> = ({ isOpen, children, duration = 0.35,
   const [paddings, setPaddings] = useState<IPadding | null>(paddingDefault);
   const { paddingTop, paddingRight, paddingBottom, paddingLeft } = paddings || {};
 
+  const stablePadding = useMemo(() => ({ ...paddingDefault, ...padding }), [padding]);
+
   useEffect(() => {
-    setPaddings(() => ({ ...paddingDefault, ...padding }));
-  }, [padding, isOpen]);
+    if (JSON.stringify(paddings) !== JSON.stringify(stablePadding)) {
+      setPaddings(stablePadding);
+    }
+  }, [stablePadding, paddings]);
 
   return (
     <motion.div

@@ -10,15 +10,8 @@ import useNavigationStore, { INavItem } from '@/store/navigationStore';
 import TrashIcon from '@/shared/components/icons/TrashIcon';
 
 export const formConfig: IFormElementsConfig = {
-  label: {
-    placeholder: 'np. Promocje',
-    header: 'Nazwa',
-  },
-  url: {
-    formCellType: 'input-search',
-    placeholder: 'Wklej lub wyszukaj',
-    header: 'Link',
-  },
+  label: { config: { placeholder: 'np. Promocje', header: 'Nazwa' } },
+  url: { config: { formCellType: 'input-search', placeholder: 'Wklej lub wyszukaj', header: 'Link' } },
 };
 
 export interface IFormData {
@@ -82,8 +75,8 @@ const MenuForm: React.FC<IProps> = ({ data, parentId, onSubmit, onCancel }) => {
       <form onSubmit={methods.handleSubmit(handleSubmit)} className="border-primary rounded-lg border border-solid bg-white p-6">
         <div className="grid grid-cols-[1fr,auto] gap-x-3">
           <div className="block w-full">
-            {formElements?.map((config) => (
-              <FormElements key={config.formControlName} formControlName={config?.formControlName as string} config={config} />
+            {formElements?.map((el) => (
+              <FormElements key={el.formControlName} formControlName={el?.formControlName as string} config={el.config} />
             ))}
           </div>
 

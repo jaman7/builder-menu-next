@@ -1,17 +1,28 @@
 import { IFormElementsConfig, IFormElements } from '@/shared/components/formElements/FormElements.model';
-import { InputType } from '@/shared/components/input/input.types';
 
-export const createConfigForm = (formConfig: IFormElementsConfig, params: { prefix?: string } = {}): IFormElements[] => {
-  return Object.entries(formConfig).map(([name, config]) => {
-    const { prefix } = params;
-    const { formCellType } = (config as IFormElements) || {};
-    const mergedConfig = {
-      ...config,
-      formControlName: name,
-      formCellType: formCellType ?? InputType.INPUT_TEXT,
-      header: config.header ?? `${prefix}.${name}`,
-      placeholder: config.placeholder ?? `${prefix}.${name}`,
-    };
-    return mergedConfig;
-  });
+export const createConfigForm = (
+  formConfig: IFormElementsConfig,
+  params: {
+    prefix?: string;
+  } = {}
+): IFormElements[] => {
+  return (
+    Object.keys(formConfig)?.map((key: string) => {
+      const { prefix } = params || {};
+      const { config } = (formConfig[key] as IFormElements) || {};
+      const { type, header, placeholder, value, formCellType } = config || {};
+      return {
+        formControlName: key,
+        type,
+        config: {
+          ...(config ?? {}),
+          prefix,
+          formCellType: formCellType ?? 'input-text',
+          header: header ?? `${prefix}.${key}`,
+          placeholder: placeholder ?? `${prefix}.${key}`,
+          value: value ?? null,
+        },
+      } as IFormElements;
+    }) ?? []
+  );
 };

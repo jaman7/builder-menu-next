@@ -5,7 +5,7 @@ import { produce } from 'immer';
 export const addItem = (items: INavItem[], newItem: INavItem, parentId: string | number | null): INavItem[] => {
   return produce(items, (draft) => {
     if (parentId !== null) {
-      const parent = traverseTreeIteratively(draft, (node) => node.id === parentId);
+      const parent = traverseTreeIteratively(draft, (node) => node?.id === parentId);
       if (!parent) {
         throw new Error(`Parent with id ${parentId} does not exist.`);
       }
@@ -19,13 +19,15 @@ export const addItem = (items: INavItem[], newItem: INavItem, parentId: string |
 export const deleteItem = (items: INavItem[], id: string | number | null): INavItem[] => {
   return produce(items, (draft) => {
     const recursiveDelete = (nodes: INavItem[]): INavItem[] => {
-      return nodes.filter((node) => {
-        if (node.id === id) return false;
-        if (node.children?.length) {
-          node.children = recursiveDelete(node.children);
-        }
-        return true;
-      });
+      return (
+        nodes?.filter((node) => {
+          if (node.id === id) return false;
+          if (node.children?.length) {
+            node.children = recursiveDelete(node.children);
+          }
+          return true;
+        }) ?? []
+      );
     };
     draft.splice(0, draft.length, ...recursiveDelete(draft));
   });

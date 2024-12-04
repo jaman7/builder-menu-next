@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { addItem, deleteItem, findMaxId, flattenTreeIterativeWithImmer, flattenTreeMemoized, updateItem } from '@/shared/helpers/tree';
-import { IFlattenedItem } from '../components/builder-menu/MenuEditor.model';
+import { addItem, deleteItem, findMaxId, updateItem } from '../shared/helpers/tree';
 
 export interface INavItem {
   id: string | number;
@@ -23,7 +22,6 @@ export interface DragState {
 
 interface NavigationStore {
   navigation: INavItem[];
-  flattenedNavigation: IFlattenedItem[];
   dragState: DragState;
   openCollapseMap: Record<string | number, boolean>;
   setNavigation: (items: INavItem[]) => void;
@@ -34,17 +32,26 @@ interface NavigationStore {
   resetDragState: () => void;
   toggleCollapse: (id: string | number) => void;
   isCollapseOpen: (id: string | number) => boolean;
+  resetState: () => void;
 }
+
+export const initialState: Partial<NavigationStore> = {
+  navigation: [],
+  dragState: { activeId: null, overId: null, offsetLeft: null },
+  openCollapseMap: {},
+};
 
 const useNavigationStore = create<NavigationStore>((set, get) => ({
   navigation: [],
-  flattenedNavigation: [],
   dragState: { activeId: null, overId: null, offsetLeft: null },
   openCollapseMap: {},
+  resetState: () =>
+    set(() => {
+      return { ...initialState };
+    }),
   setNavigation: (items: INavItem[]) =>
     set(() => {
-      const flattened = flattenTreeMemoized([], items);
-      return { navigation: items, flattenedNavigation: flattened };
+      return { navigation: items };
     }),
   addNavItem: (item, parentId = null) =>
     set((state) => {
@@ -59,17 +66,20 @@ const useNavigationStore = create<NavigationStore>((set, get) => ({
         children: [],
       };
       const updatedNavigation = addItem(state?.navigation, newItem, parentId);
-      return { navigation: updatedNavigation, flattenedNavigation: flattenTreeIterativeWithImmer([], updatedNavigation) };
+      return { navigation: updatedNavigation };
     }),
   updateNavItem: (id, updatedItem) =>
     set((state) => {
+      const itemExists = state.navigation.some((item) => item.id === id);
+      if (!itemExists) return state;
+
       const nav = updateItem(state.navigation, id, updatedItem);
-      return { navigation: nav, flattenedNavigation: flattenTreeIterativeWithImmer([], nav) };
+      return { navigation: nav };
     }),
   deleteNavItem: (id) =>
     set((state) => {
       const nav = deleteItem(state.navigation, id);
-      return { navigation: nav, flattenedNavigation: flattenTreeIterativeWithImmer([], nav) };
+      return { navigation: nav };
     }),
   setDragState: (state: Partial<DragState>) =>
     set((current) => ({

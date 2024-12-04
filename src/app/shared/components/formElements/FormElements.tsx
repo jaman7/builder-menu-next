@@ -7,7 +7,7 @@ import { IFormElementsTypes } from './FormElements.type';
 
 interface IProps {
   formControlName: string;
-  config: IFormElements;
+  config?: IFormElements;
 }
 
 const { INPUT_TEXT, INPUT_NUMBER, INPUT_SEARCH } = InputType;
@@ -46,10 +46,10 @@ const FormElements = ({ formControlName, config }: IProps) => {
   }, [formControlName, control, config, errors, formCellType]);
 
   return (
-    <div className={`form-element ${config.styleClass || ''}`}>
-      {config.header && (
+    <div className={`form-element ${config?.styleClass || ''}`}>
+      {config?.header && (
         <label className="text-secondary text-sm" htmlFor={formControlName}>
-          {config.header}
+          {config?.header}
         </label>
       )}
       {renderFormElement}

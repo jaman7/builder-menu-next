@@ -9,7 +9,7 @@ import {
   getMinDepth,
   levelProjection,
 } from './navigation';
-import { IFlattenedItem } from '@/src/app/components/builder-menu/MenuEditor.model';
+import { IFlattenedItem } from '@/components/builder-menu/MenuEditor.model';
 
 describe('findParentById', () => {
   it('should find the parent of a direct child', () => {

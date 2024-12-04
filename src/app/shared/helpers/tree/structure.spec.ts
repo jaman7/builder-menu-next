@@ -5,7 +5,6 @@ import {
   buildTreeFromFlattenIteratively,
   findIdPushChildren,
   findItem,
-  flattenTreeIterativeWithImmer,
   updateOrderAndLevel,
 } from './structure';
 import { Modifier } from '@dnd-kit/core';
@@ -86,108 +85,6 @@ describe('buildTreeFromFlatten', () => {
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
     expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
-  });
-});
-
-describe('flattenTreeIterativeWithImmer', () => {
-  it('should flatten a tree with a single root element', () => {
-    const items: INavItem[] = [{ id: 1, parentId: null, label: 'Root', children: [], level: 0, order: 0 }];
-    const result = flattenTreeIterativeWithImmer([], items);
-    expect(result).toEqual([{ id: 1, parentId: null, label: 'Root', level: 0, order: 0, children: [] }]);
-  });
-
-  it('should flatten a tree with nested elements', () => {
-    const items: INavItem[] = [
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [{ id: 2, parentId: 1, label: 'Child', children: [], level: 1, order: 0 }],
-        level: 0,
-        order: 0,
-      },
-    ];
-    const result = flattenTreeIterativeWithImmer([], items);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        level: 0,
-        order: 0,
-        children: [{ id: 2, parentId: 1, label: 'Child', children: [], level: 1, order: 0 }],
-      },
-      { id: 2, parentId: 1, label: 'Child', level: 1, order: 0, children: [] },
-    ]);
-  });
-
-  it('should flatten a tree with multiple levels', () => {
-    const items: INavItem[] = [
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child 1',
-            children: [{ id: 3, parentId: 2, label: 'Child 2', children: [], level: 2, order: 0 }],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ];
-    const result = flattenTreeIterativeWithImmer([], items);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        level: 0,
-        order: 0,
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child 1',
-            children: [{ id: 3, parentId: 2, label: 'Child 2', children: [], level: 2, order: 0 }],
-            level: 1,
-            order: 0,
-          },
-        ],
-      },
-      {
-        id: 2,
-        parentId: 1,
-        label: 'Child 1',
-        level: 1,
-        order: 0,
-        children: [{ id: 3, parentId: 2, label: 'Child 2', children: [], level: 2, order: 0 }],
-      },
-      { id: 3, parentId: 2, label: 'Child 2', level: 2, order: 0, children: [] },
-    ]);
-  });
-
-  it('should handle circular references gracefully', () => {
-    const items = [
-      { id: 1, parentId: null, label: 'Root', children: [{ id: 2, parentId: 1 }] },
-      { id: 2, parentId: 1, label: 'Child', children: [{ id: 1, parentId: 2 }] }, // Circular reference
-    ];
-    expect(() => flattenTreeIterativeWithImmer([], items)).toThrow('Circular reference detected');
-  });
-
-  it('should handle large trees efficiently', () => {
-    const items = Array.from({ length: 1000 }, (_, i) => ({
-      id: i + 1,
-      parentId: i > 0 ? i : null,
-      children: [],
-    }));
-    const result = flattenTreeIterativeWithImmer([], items);
-    expect(result).toHaveLength(1000);
   });
 });
 
