@@ -1,126 +1,133 @@
 .nav-menu {
   padding: 1rem 0;
   display: flex;
-  justify-content: center;
+  position: relative;
+  z-index: 1;
 }
 
 .menu {
   margin: 0;
   padding: 0;
-  display: flex;
   list-style: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  font-size: 14px;
+  display: flex;
+  background: transparent;
+}
 
-  & .item {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
+.item {
+  position: relative;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  width: max-content;
+  cursor: pointer;
+  transition: all 0.3s ease;
 
-    &.horizonatal {
-      & svg {
-        transform: rotate(90deg);
-        transition: transform 250ms ease-in-out;
-      }
-    }
-
-    &:hover {
-      background-color: var(--button-primary-bg);
-      color: var(--bg-secondary);
-
-      & > .item-content > svg {
-        transform: rotate(-90deg);
-      }
-    }
-
-    &-content {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+  &.horizonatal {
+    & svg {
+      transform: rotate(90deg);
+      transition: transform 250ms ease-in-out;
     }
   }
 
-  & > .item {
-    padding: 0.25rem 1rem;
-    cursor: pointer;
-    border: 1px solid var(--border-primary);
-    border-radius: 5px;
-    width: max-content;
-    position: relative;
+  &:hover {
+    background: linear-gradient(135deg, var(--button-primary-bg), var(--button-secondary-color));
+    color: var(--text-white);
+    box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.2);
+
+    & > .item-content > svg {
+      transform: rotate(-90deg);
+    }
+
+    & > .menu-dropdown {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+      pointer-events: auto;
+
+      & > .item {
+        display: block;
+      }
+    }
+  }
+
+  .item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &:hover::after {
+      width: 100%;
+    }
+  }
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  opacity: 0;
+  visibility: hidden;
+  width: max-content;
+  transform: translateY(-20px);
+  pointer-events: none;
+  transition: all 0.3s ease;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+
+  .item {
+    padding: 0.5rem 1rem;
+    transform: rotateY(-90deg);
+    opacity: 0;
+    display: none;
+    animation: topToBottom 0.4s ease forwards;
+    animation-delay: calc(var(--item-index, 0) * 0.1s);
+    transform-origin: top center;
+    width: 100%;
+
+    &.vertical > .item-content > svg {
+      transform: rotate(0deg);
+      transition: transform 250ms ease-in-out;
+    }
 
     &:hover {
-      background-color: var(--button-primary-bg);
-      color: var(--bg-secondary);
+      & > .item-content svg {
+        transform: rotate(-180deg) !important;
+      }
 
-      & > ul.menu-dropdown {
+      & > .menu-dropdown {
+        perspective: 1000px;
         opacity: 1;
         visibility: visible;
-        top: 100%;
-        transition: 0.3s;
+        transform: translateX(0);
         pointer-events: auto;
       }
     }
+  }
+}
 
-    & > ul.menu-dropdown {
-      position: absolute;
-      z-index: 1000;
-      top: 80%;
-      margin: 0;
-      left: 0;
-      opacity: 0;
-      visibility: hidden;
-      transition: 0.3s;
-      pointer-events: none;
-      width: max-content;
+.menu-dropdown .menu-dropdown {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  transform: translateX(-10px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  z-index: 20;
+}
 
-      &::before {
-        content: "";
-        display: block;
-        position: absolute;
-        height: 10px;
-        width: 100%;
-        top: 0;
-      }
-
-      & .item {
-        padding: 4px 1rem;
-        cursor: pointer;
-        border: 1px solid var(--border-primary);
-        border-radius: 5px;
-        position: relative;
-
-        &.vertical > .item-content > svg {
-          transform: rotate(0deg);
-          transition: transform 250ms ease-in-out;
-        }
-
-        &:hover {
-          & > .menu-dropdown {
-            opacity: 1;
-            visibility: visible;
-            left: 100%;
-            transition: 0.3s;
-            pointer-events: auto;
-          }
-
-          & > .item-content svg {
-            transform: rotate(-180deg);
-          }
-        }
-
-        & ul.menu-dropdown {
-          position: absolute;
-          z-index: 1000;
-          pointer-events: none;
-          top: 0;
-          left: 150%;
-          opacity: 0;
-          visibility: hidden;
-          transition: 0.3s;
-          width: max-content;
-        }
-      }
-    }
+@keyframes topToBottom {
+  0% {
+    opacity: 0;
+    transform: rotateX(-90deg) translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0deg) translateX(0);
   }
 }
