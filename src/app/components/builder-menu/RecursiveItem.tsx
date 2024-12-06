@@ -13,7 +13,7 @@ const RecursiveItem: React.FC<IProps> = ({ item, nDepth }) => {
   return (
     <>
       <div
-        className="RecursiveItem"
+        className="block"
         style={{
           marginLeft: `${nDepth * indentationWidth}px`,
           boxSizing: 'border-box',

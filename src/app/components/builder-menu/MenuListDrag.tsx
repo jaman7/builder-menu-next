@@ -17,7 +17,6 @@ import { useCallback, useMemo } from 'react';
 import useNavigationStore from '@/store/navigationStore';
 import { dropAnimationConfig, indentationWidth, measuring } from './MenuEditor.const';
 import { createPortal } from 'react-dom';
-import SortableItem from './SortableItem';
 import {
   adjustTranslate,
   buildTreeFromFlatten,
@@ -28,6 +27,7 @@ import {
   removeChildrenOf,
   updateOrderAndLevel,
 } from '@/shared/helpers/tree';
+import TreeItem from './TreeItem';
 
 interface IProps {
   style?: 'bordered' | 'shadow';
@@ -142,7 +142,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
         <ul className="bg-secondary flex flex-col rounded-lg">
           {flattenedMenu &&
             flattenedMenu?.map((item) => (
-              <SortableItem
+              <TreeItem
                 key={item.id}
                 id={item.id}
                 value={item.id?.toString()}
@@ -162,7 +162,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
               style={{ overflow: 'hidden' }}
             >
               {activeId && activeItem?.id === activeId ? (
-                <SortableItem
+                <TreeItem
                   id={activeId}
                   depth={activeItem?.level > 0 ? 0 : activeItem?.level}
                   item={flattenedMenu?.find((el) => el.id === activeId)}
