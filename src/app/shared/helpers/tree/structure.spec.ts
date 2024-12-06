@@ -1,12 +1,5 @@
 import { INavItem } from '@/src/app/store/navigationStore';
-import {
-  adjustTranslate,
-  buildTreeFromFlatten,
-  buildTreeFromFlattenIteratively,
-  findIdPushChildren,
-  findItem,
-  updateOrderAndLevel,
-} from './structure';
+import { adjustTranslate, buildTreeFromFlatten, buildTreeFromFlattenIteratively, findItem, updateOrderAndLevel } from './structure';
 import { Modifier } from '@dnd-kit/core';
 
 describe('buildTreeFromFlatten', () => {
@@ -85,114 +78,6 @@ describe('buildTreeFromFlatten', () => {
       { id: 2, parentId: 999, label: 'Invalid Child', order: 1, level: 1 },
     ];
     expect(() => buildTreeFromFlatten(items)).toThrow('Item with id 999 not found');
-  });
-});
-
-describe('findIdPushChildren', () => {
-  it('should add children to a root node', () => {
-    const items = [{ id: 1, children: [] }];
-    const newChildren = [{ id: 2 }, { id: 3 }];
-    const result = findIdPushChildren(1, items, newChildren);
-    expect(result).toEqual([{ id: 1, children: [{ id: 2 }, { id: 3 }] }]);
-  });
-
-  it('should add children to a nested node', () => {
-    const items = [
-      {
-        id: 1,
-        children: [
-          {
-            id: 2,
-            children: [],
-          },
-        ],
-      },
-    ];
-    const newChildren = [{ id: 3 }];
-    const result = findIdPushChildren(2, items, newChildren);
-    expect(result).toEqual([
-      {
-        id: 1,
-        children: [
-          {
-            id: 2,
-            children: [{ id: 3 }],
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should not modify the tree if the id is not found', () => {
-    const items = [{ id: 1, children: [] }];
-    const newChildren = [{ id: 2 }];
-    const result = findIdPushChildren(999, items, newChildren);
-    expect(result).toEqual(items);
-  });
-
-  it('should add children to the correct parent', () => {
-    const sourceArray: INavItem[] = [
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ];
-    const newChildren: INavItem[] = [{ id: 3, parentId: 2, label: 'Grandchild', children: [], level: 2, order: 0 }];
-    const result = findIdPushChildren(2, sourceArray, newChildren);
-    expect(result).toEqual([
-      {
-        id: 1,
-        parentId: null,
-        label: 'Root',
-        children: [
-          {
-            id: 2,
-            parentId: 1,
-            label: 'Child',
-            children: [
-              {
-                id: 3,
-                parentId: 2,
-                label: 'Grandchild',
-                children: [],
-                level: 2,
-                order: 0,
-              },
-            ],
-            level: 1,
-            order: 0,
-          },
-        ],
-        level: 0,
-        order: 0,
-      },
-    ]);
-  });
-
-  it('should do nothing when copyChildren is empty', () => {
-    const items = [{ id: 1, children: [] }];
-    const result = findIdPushChildren(1, items, []);
-    expect(result).toEqual([{ id: 1, children: [] }]);
-  });
-
-  it('should not modify the tree when findId does not exist', () => {
-    const items = [{ id: 1, children: [] }];
-    const newChildren = [{ id: 2 }];
-    const result = findIdPushChildren(999, items, newChildren);
-    expect(result).toEqual(items);
   });
 });
 

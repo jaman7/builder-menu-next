@@ -45,24 +45,6 @@ export const buildTreeFromFlattenIteratively = (flattenedItems: IFlattenedItem[]
   return root;
 };
 
-export const findIdPushChildren = (findId: number | string, sourceArray: INavItem[], copyChildren: INavItem[]): INavItem[] => {
-  const recursiveSearch = (items: INavItem[]): boolean => {
-    for (const item of items) {
-      if (item?.id === findId) {
-        item.children = [...copyChildren];
-        return true;
-      }
-      if (item?.children && item?.children?.length > 0) {
-        const found = recursiveSearch(item.children);
-        if (found) return true;
-      }
-    }
-    return false;
-  };
-  recursiveSearch(sourceArray);
-  return sourceArray;
-};
-
 export const findItem = (items: INavItem[], itemId: UniqueIdentifier): INavItem => {
   const item = items?.find(({ id }) => id === itemId);
   if (!item) throw new Error(`Item with id ${itemId} not found`);
@@ -94,16 +76,6 @@ export const flatten = (items: INavItem[], parentId: string | number | null = nu
 
 export const flattenTree = (items: INavItem[]): IFlattenedItem[] => {
   return flatten(items);
-};
-
-export const removeChildrenOf = (items: IFlattenedItem[], ids: (string | number)[]): IFlattenedItem[] => {
-  const excludeParentIds = [...ids];
-  return items?.filter((item) => {
-    if (item.parentId && excludeParentIds.includes(item.parentId)) {
-      return false;
-    }
-    return true;
-  });
 };
 
 export const adjustTranslate: Modifier = ({ transform }) => {

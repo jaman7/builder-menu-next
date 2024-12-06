@@ -57,7 +57,14 @@ const Button: React.FC<ButtonProps> = ({
   );
 
   return (
-    <button id={id} type={type} onClick={handleClick} disabled={disabled} aria-label={ariaLabel} className={buttonClassNames}>
+    <button
+      id={id}
+      type={type}
+      onClick={handleClick}
+      disabled={disabled}
+      aria-label={ariaLabel || 'Przycisk bez nazwy'}
+      className={buttonClassNames}
+    >
       {children}
     </button>
   );

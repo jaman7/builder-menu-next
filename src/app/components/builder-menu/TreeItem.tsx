@@ -96,7 +96,17 @@ const TreeItem: React.FC<IProps> = ({ id, item, navChildren, childCount, clone, 
 
   return (
     <li className={styleLielement} ref={setDroppableNodeRef} style={ItemStyle} {...props}>
-      <div {...attributes} {...listeners} className="item-detail w-full cursor-default" ref={setDraggableNodeRef} style={threeStyle}>
+      <div
+        {...attributes}
+        {...listeners}
+        role="treeitem"
+        aria-level={depth}
+        aria-expanded={!clone}
+        aria-selected={ghost}
+        className="item-detail w-full cursor-default"
+        ref={setDraggableNodeRef}
+        style={threeStyle}
+      >
         <MenuItem onEdit={onHandleEdit} onDelete={onHandleDelete} onAddNew={(id) => onHandleAddNew(id)} item={item} id={id} />
 
         {clone && childCount && childCount > 1 ? (

@@ -58,6 +58,7 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
           className={inputClasses}
           style={{ '--tw-placeholder-color': 'var(--text-placeholder)' } as React.CSSProperties}
           aria-invalid={!!error}
+          aria-describedby={error ? `${name}-error` : undefined}
           autoComplete="off"
         />
 
@@ -68,7 +69,11 @@ const Input: React.FC<IProps> = ({ name, config, value, onChange, error }) => {
         )}
       </div>
 
-      {error && <span className="text-xs text-red-500">{error}</span>}
+      {error && (
+        <span aria-live="assertive" role="alert" className="text-xs text-red-500">
+          {error}
+        </span>
+      )}
     </div>
   );
 };

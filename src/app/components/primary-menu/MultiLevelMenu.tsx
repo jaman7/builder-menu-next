@@ -36,10 +36,13 @@ const MultiLevelMenu: React.FC = () => {
     if (!Array.isArray(items)) return null;
 
     return (
-      <ul className={`${level === 0 ? 'menu' : 'menu-dropdown'} rounded-lg`}>
+      <ul className={`${level === 0 ? 'menu' : 'menu-dropdown'} rounded-lg`} role="menu">
         {items.map((item, index) => (
           <li
             key={`${item.id}_menu-item`}
+            role="menuitem"
+            aria-expanded={!!item.children}
+            tabIndex={index}
             style={{ '--item-index': index } as React.CSSProperties}
             className={classNames('item border border-solid border-secondary block rounded-lg', {
               horizonatal: level === 0 && item.children && item.children?.length > 0,

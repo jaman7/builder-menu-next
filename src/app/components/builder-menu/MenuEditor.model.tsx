@@ -11,4 +11,5 @@ export interface IProjected {
   maxDepth?: number;
   minDepth?: number;
   parentId?: number | string | null;
+  ariaDropEffect?: string;
 }

@@ -53,6 +53,8 @@ const Collapse: React.FC<ICollapseProps> = ({ isOpen, children, duration = 0.35,
         duration,
         ease,
       }}
+      aria-hidden={!isOpen}
+      role="region"
     >
       {children}
     </motion.div>

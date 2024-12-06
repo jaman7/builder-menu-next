@@ -95,5 +95,5 @@ export const levelProjection = (
       .find((item) => item.level === level)?.parentId;
     return newParent ?? null;
   };
-  return { level, maxDepth, minDepth, parentId: getParentId() };
+  return { level, maxDepth, minDepth, parentId: getParentId(), ariaDropEffect: 'move' };
 };

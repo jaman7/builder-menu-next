@@ -24,7 +24,6 @@ import {
   childrensItems,
   flattenTree,
   levelProjection,
-  removeChildrenOf,
   updateOrderAndLevel,
 } from '@/shared/helpers/tree';
 import TreeItem from './TreeItem';
@@ -37,17 +36,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
   const { navigation, setDragState, resetDragState, setNavigation } = useNavigationStore();
   const { activeId, overId, offsetLeft } = useNavigationStore((state) => state.dragState);
 
-  const flattenedMenu = useMemo(() => {
-    const flattenedTree = flattenTree(navigation);
-    const collapsedItems = flattenedTree.reduce<(string | number)[]>((acc, { children, collapsed, id }) => {
-      if (collapsed && children && children?.length > 0) {
-        return [...acc, id];
-      }
-      return acc;
-    }, []);
-
-    return removeChildrenOf(flattenedTree, activeId ? [activeId, ...collapsedItems] : collapsedItems);
-  }, [activeId, navigation]);
+  const flattenedMenu = useMemo(() => flattenTree(navigation), [navigation]);
 
   const activeItem = useMemo(() => (activeId ? flattenedMenu?.find(({ id }) => id === activeId) : null), [activeId, flattenedMenu]);
 
@@ -108,7 +97,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
       }
 
       const { level, parentId } = projected;
-      const clonedItems = flattenTree(navigation);
+      const clonedItems = [...flattenedMenu];
       const overIndex = clonedItems.findIndex(({ id }) => id === over.id);
       const activeIndex = clonedItems.findIndex(({ id }) => id === active.id);
       if (activeIndex < 0 || overIndex < 0) {
@@ -124,7 +113,7 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
 
       resetState();
     },
-    [projected, navigation, resetDragState, resetState, setNavigation]
+    [projected, flattenedMenu, resetDragState, resetState, setNavigation]
   );
 
   return (
@@ -137,6 +126,15 @@ const MenuListDrag: React.FC<IProps> = ({ style }) => {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
+      accessibility={{
+        announcements: {
+          onDragStart: ({ active }) => `Picked up item ${active.id}.`,
+          onDragOver: ({ active, over }) =>
+            over ? `Dragging item ${active.id} over ${over.id}.` : `Dragging item ${active.id} with no valid drop target.`,
+          onDragEnd: ({ active, over }) => `Dropped item ${active.id} ${over ? `on ${over.id}` : ''}.`,
+          onDragCancel: ({ active }) => `Canceled dragging item ${active.id}.`,
+        },
+      }}
     >
       <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
         <ul className="bg-secondary flex flex-col rounded-lg">
